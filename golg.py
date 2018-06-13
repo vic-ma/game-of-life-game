@@ -3,7 +3,7 @@ from typing import List
 
 
 class TPGameOfLife:
-"""Simulates a Game of Life following 2plife rules."""
+    """Simulates a Game of Life following 2plife rules."""
 
     def __init__(self, columns: int, rows: int) -> None:
         """Create TPGameOfLife object.
@@ -22,18 +22,13 @@ class TPGameOfLife:
         for coord in coordinates:
             self.grid[coord[0]][coord[1]].alive = True
             
-    def tick(self) -> None:
-        """Apply changes to all Cells on grid to move forward a generation."""
-        for x in range(self.columns):
-            for y in range(self.rows):
-                self.grid[x][y].tick()
-
     def prepare_tick(self) -> None:
         """Let all Cells on grid know what their next move is."""
         for x in range(self.columns):
             for y in range(self.rows):  # Loop over every Cell
                 cell = self.grid[x][y]
-                live_neighbours = 0
+                red_neighbours = 0
+                green_neighbours = 0
 
                 for n_x in range(x-1, x+2):
                     for n_y in range(y-1, y+2):  # Loop over all neighbours
@@ -42,18 +37,18 @@ class TPGameOfLife:
                                 0 <= n_y < self.rows):
                                 # If neighbour is not the Cell itself and
                                 # if neighbour is within grid
-                            if self.grid[n_x][n_y].alive:
-                                live_neighbours += 1
+                            if self.grid[n_x][n_y].state == 'red':
+                                red_neighbours += 1
+                            elif self.grid[n_x][n_y].state == 'green':
+                                green_neighbours += 1
 
-                if (cell.alive and (live_neighbours == 2 or
-                    live_neighbours == 3)):
-                    cell.live()  # Survival
-                elif cell.alive and live_neighbours <= 1:
-                    cell.kill()  # Underpopulation
-                elif cell.alive and live_neighbours >= 4:
-                    cell.kill()  # Overpopulation
-                elif not cell.alive and live_neighbours == 3:
-                    cell.live()  # Birth
+                # TODO: rules
+
+    def tick(self) -> None:
+        """Apply changes to all Cells on grid to move forward a generation."""
+        for x in range(self.columns):
+            for y in range(self.rows):
+                self.grid[x][y].tick()
 
     def display(self) -> None:
         """Print grid in ASCII"""
@@ -74,6 +69,16 @@ class TPGameOfLife:
             self.tick()
             time.sleep(0.5)
 
+
+class Cell:
+    """A cell within a grid in a TPGameOfLife"""
+
+    def __init__(state: str):
+        """Create Cell object.
+
+        state      The state of the Cell (dead/red/green)
+        """
+        self.state = state
 
 if __name__ == '__main__':
     pass
