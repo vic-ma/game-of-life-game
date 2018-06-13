@@ -25,7 +25,7 @@ class TPGameOfLife:
     def seed(self, state: int, coordinates: List[List[int]]) -> None:
         """Set state of multiple Cells on grid."""
         for coord in coordinates:
-            self.grid[coord[0]][coord[1]].state = True
+            self.grid[coord[0]][coord[1]].state = state
             
     def prepare_tick(self) -> None:
         """Let all Cells on grid know what their next move is."""
@@ -50,9 +50,9 @@ class TPGameOfLife:
                 if cell.state == self.DEAD:  #Birth
                     if red_neighbours == 3 and green_neighbours == 3:
                         if random.randint(1, 2) == 1:
-                            cell.next_state == self.RED
+                            cell.next_state = self.RED
                         else:
-                            cell.next_state == self.GREEN
+                            cell.next_state = self.GREEN
                     elif red_neighbours == 3 and green_neighbours != 3:
                         cell.next_state = self.RED
                     elif green_neighbours == 3 and red_neighbours !=3:
@@ -73,8 +73,6 @@ class TPGameOfLife:
                         cell.next_state = self.GREEN
                     else:
                         cell.next_state = self.DEAD
-
-
 
     def tick(self) -> None:
         """Apply changes to all Cells on grid to move forward a generation."""
@@ -118,5 +116,6 @@ class Cell:
 
 if __name__ == '__main__':
     gol = TPGameOfLife(20,20)
-    gol.seed(1, [[8,10],[9,10],[10,10],[11,10],[12,10]])
+    gol.seed(1, [[10,11],[11,11],[11,10]])
+    gol.seed(2, [[9,10],[9,9],[10,9]])
     gol.play()
