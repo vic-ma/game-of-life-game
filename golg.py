@@ -17,12 +17,12 @@ class TPGameOfLife:
         columns     The number of columns in the grid (max x)
         rows        The number of rows in the grid (max y)
         """
-        self.grid = [[Cell() for row in range(rows)] for column in
+        self.grid = [[Cell(self.DEAD) for row in range(rows)] for column in
                     range(columns)]
         self.columns = columns
         self.rows = rows
 
-    def seed(self, state, coordinates: List[List[int]]) -> None:
+    def seed(self, state: int, coordinates: List[List[int]]) -> None:
         """Set state of multiple Cells on grid."""
         for coord in coordinates:
             self.grid[coord[0]][coord[1]].state = True
@@ -37,42 +37,42 @@ class TPGameOfLife:
 
                 for n_x in range(x-1, x+2):
                     for n_y in range(y-1, y+2):  # Loop over all neighbours
-                        if not ((n_x == x and n_y == y) and 
-                                0 <= n_x < self.columns and
-                                0 <= n_y < self.rows):
+                        if (not(n_x == x and n_y == y) and 
+                            0 <= n_x < self.columns and
+                            0 <= n_y < self.rows):
                                 # If neighbour is not the Cell itself and
                                 # if neighbour is within grid
-                            if self.grid[n_x][n_y].state == RED:
+                            if self.grid[n_x][n_y].state == self.RED:
                                 red_neighbours += 1
-                            elif self.grid[n_x][n_y].state == GREEN:
+                            elif self.grid[n_x][n_y].state == self.GREEN:
                                 green_neighbours += 1
 
-                if cell.state == DEAD:  #Birth
+                if cell.state == self.DEAD:  #Birth
                     if red_neighbours == 3 and green_neighbours == 3:
                         if random.randint(1, 2) == 1:
-                            cell.next_state == RED
+                            cell.next_state == self.RED
                         else:
-                            cell.next_state == GREEN
+                            cell.next_state == self.GREEN
                     elif red_neighbours == 3 and green_neighbours != 3:
-                        cell.next_state = RED
+                        cell.next_state = self.RED
                     elif green_neighbours == 3 and red_neighbours !=3:
-                        cell.next_state = GREEN
-                elif cell.state == RED:  # Red survival/death
+                        cell.next_state = self.GREEN
+                elif cell.state == self.RED:  # Red survival/death
                     if 2 <= red_neighbours - green_neighbours <= 3:
-                        cell.next_state = RED
+                        cell.next_state = self.RED
                     elif (red_neighbours - green_neighbours == 1 and
                           red_neighbours >= 2):
-                        cell.next_state = RED
+                        cell.next_state = self.RED
                     else:
-                        cell.next_state = DEAD
-                elif cell.state == GREEN: # Green survival/death
+                        cell.next_state = self.DEAD
+                elif cell.state == self.GREEN: # Green survival/death
                     if 2 <= green_neighbours - red_neighbours <= 3:
-                        cell.next_state = GREEN
+                        cell.next_state = self.GREEN
                     elif (green_neighbours - red_neighbours == 1 and
                           green_neighbours >= 2):
-                        cell.next_state = GREEN
+                        cell.next_state = self.GREEN
                     else:
-                        cell.next_state = DEAD
+                        cell.next_state = self.DEAD
 
 
 
@@ -80,16 +80,18 @@ class TPGameOfLife:
         """Apply changes to all Cells on grid to move forward a generation."""
         for x in range(self.columns):
             for y in range(self.rows):
-                self.grid[x][y].tick()
+                self.grid[x][y].state = self.grid[x][y].next_state
 
     def display(self) -> None:
         """Print grid in ASCII"""
         for y in reversed(range(self.rows)):
             for x in range(self.columns):
-                if self.grid[x][y].alive:
-                    print('*', end ='')
+                if self.grid[x][y].state == self.RED:
+                    print('R', end='')
+                elif self.grid[x][y].state == self.GREEN:
+                    print('G', end='')
                 else:
-                    print('o', end ='')
+                    print('-', end='')
             print()
 
     def play(self) -> None:
@@ -115,4 +117,6 @@ class Cell:
         self.next_state = self.state
 
 if __name__ == '__main__':
-    pass
+    gol = TPGameOfLife(20,20)
+    gol.seed(1, [[8,10],[9,10],[10,10],[11,10],[12,10]])
+    gol.play()
