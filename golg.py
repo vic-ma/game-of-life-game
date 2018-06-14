@@ -2,9 +2,24 @@ import time
 import random
 from typing import List
 
+import pygame
+
+
+class Cell:
+    """A cell within a grid in a TPGameOfLife"""
+
+    def __init__(self, state: int):
+        """Create Cell object.
+
+        state           The state of the Cell (dead=0/red=1/green=2)
+        next_state      The state of the Cell in the next generation
+        """
+        self.state = state
+        self.next_state = self.state
+
 
 class TPGameOfLife:
-    """Simulates a version of Life based on p2life."""
+    """A simulation of a version of Life based on p2life."""
     # Cell state codes
     DEAD = 0
     RED = 1
@@ -102,17 +117,22 @@ class TPGameOfLife:
             time.sleep(0.5)
 
 
-class Cell:
-    """A cell within a grid in a TPGameOfLife"""
+class GameScreen:
+    """A graphical visualization of a TPGameOfLife instance."""
 
-    def __init__(self, state: int):
-        """Create Cell object.
-
-        state           The state of the Cell (dead=0/red=1/green=2)
-        next_state      The state of the Cell in the next generation
+    def __init__(self, screen: pygame.Surface, tpgol: TPGameOfLife) -> None:
+        """Create a GameScreen object.
+        
+        screen      A pygame.Surface objcet representing the computer monitor
+        tpgol       A Two Player Game of Life
         """
-        self.state = state
-        self.next_state = self.state
+        self.screen = screen
+        self.tpgol = tpgol
+
+    def draw_grid(self) -> None:
+        """Draw gridlines onto screen."""
+        
+
 
 if __name__ == '__main__':
     gol = TPGameOfLife(20,20)
