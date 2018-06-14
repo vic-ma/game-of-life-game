@@ -1,8 +1,9 @@
 import time
 import random
-from typing import List
+from typing import List, Tuple
 
 import pygame
+pygame.init()
 
 
 class Cell:
@@ -37,7 +38,7 @@ class TPGameOfLife:
         self.columns = columns
         self.rows = rows
 
-    def seed(self, state: int, coordinates: List[List[int]]) -> None:
+    def seed(self, state: int, coordinates: List[Tuple[int]]) -> None:
         """Set state of multiple Cells on grid."""
         for coord in coordinates:
             self.grid[coord[0]][coord[1]].state = state
@@ -129,13 +130,33 @@ class GameScreen:
         self.screen = screen
         self.tpgol = tpgol
 
-    def draw_grid(self) -> None:
+    def draw_grid(self, colour: Tuple[int, int, int]) -> None:
         """Draw gridlines onto screen."""
-        
+        x_pixels = pygame.display.Info().current_w
+        y_pixels = pygame.display.Info().current_h
+
+        for x in range(0, x_pixels+1, 20):
+            pygame.draw.line(self.screen, colour, (x, 0), (x, x_pixels))
+        for y in range(0, y_pixels+1, 20):
+            pygame.draw.line(self.screen, colour, (0, y), (y_pixels, y))
+
+    def colour_cell(self, colour: Tuple[int, int, int], \
+                    coordinates: Tuple[int, int]) -> pygame.Rect:
+        """Change the colour of a cell on screen and return the corresponding
+        Rect, for efficient updating of screen.
+        """
+        x = coordinates[0]*20
+        y = coordinates[1]*20
+        cell_rect = pygame.Rect(x+1, y+1, 19, 19)  # Offsets for grid lines
+        pygame.draw.rect(self.screen, colour, cell_rect)
+        return cell_rect
 
 
 if __name__ == '__main__':
-    gol = TPGameOfLife(20,20)
-    gol.seed(1, [[10,11],[11,11],[11,10]])
-    gol.seed(2, [[9,10],[9,9],[10,9]])
-    gol.play()
+    screen = pygame.display.set_mode((500, 500))
+    gs = GameScreen(screen, TPGameOfLife(0, 0))
+    gs.draw_grid((255, 255, 255))
+    pygame.display.update()
+    r = gs.colour_cell((255, 50, 255), (10,5))
+    pygame.display.update(r)
+    time.sleep(10)
