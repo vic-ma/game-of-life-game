@@ -136,27 +136,33 @@ class GameScreen:
             pygame.draw.line(self.screen, colour, (x, 0), (x, x_pixels))
         for y in range(0, y_pixels+1, 20):
             pygame.draw.line(self.screen, colour, (0, y), (y_pixels, y))
-        pygame.display.update()
 
     def colour_cell(self, colour: Tuple[int, int, int], \
-                    coordinates: Tuple[int, int]):
+                    mouse_pos: Tuple[int, int]):
         """Change the colour of a cell on screen."""
-        x = coordinates[0]*20
-        y = coordinates[1]*20
+        x = mouse_pos[0]//20 * 20
+        y = mouse_pos[1]//20 * 20
         cell_rect = pygame.Rect(x+1, y+1, 19, 19)  # Offset for grid lines
         pygame.draw.rect(self.screen, colour, cell_rect)
-        pygame.display.update(cell_rect)
 
 class Graphics:
     """A Graphical implementation of TPGameOfLife."""
+    # colour tuples
+    BLACK = (0, 0, 0)
+    WHITE = (255, 255, 255)
+    RED = (255, 0, 0)
+    GREEN = (0, 255, 0)
 
     def __init__(self, tpgol: TPGameOfLife, gs: GameScreen):
+        """Create Graphics object."""
         self.tpgol = tpgol
         self.gs = gs
 
+    def start_game(self):
+        self.gs.draw_grid(self.WHITE)
 
 if __name__ == '__main__':
+    tpgol = TPGameOfLife(50, 50)
     gs = GameScreen((500, 500))
-    gs.draw_grid((255, 255, 255))
-    gs.colour_cell((255, 50, 255), (10,5))
-    time.sleep(10)
+    g = Graphics(tpgol, gs)
+    g.start_game()
