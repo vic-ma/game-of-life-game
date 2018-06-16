@@ -1,5 +1,6 @@
 import time
 import random
+import sys
 from typing import List, Tuple
 
 import pygame
@@ -43,7 +44,7 @@ class TPGameOfLife:
         for coord in coordinates:
             self.grid[coord[0]][coord[1]].state = state
             
-    def prepare_tick(self) -> None:
+    def tick(self) -> None:
         """Let all Cells on grid know what their next move is."""
         for x in range(self.columns):
             for y in range(self.rows):  # Loop over every Cell
@@ -90,8 +91,7 @@ class TPGameOfLife:
                     else:
                         cell.next_state = self.DEAD
 
-    def tick(self) -> None:
-        """Apply changes to all Cells on grid to move forward a generation."""
+        # Apply changes to all Cells on grid to move forward a generation
         for x in range(self.columns):
             for y in range(self.rows):
                 self.grid[x][y].state = self.grid[x][y].next_state
@@ -113,7 +113,6 @@ class TPGameOfLife:
         while True:
             print()
             self.display()
-            self.prepare_tick()
             self.tick()
             time.sleep(0.5)
 
@@ -124,7 +123,7 @@ class GameScreen:
     def __init__(self, resolution: Tuple[int, int]) -> None:
         """Create a GameScreen object.
         
-        screen      A pygame.Surface objcet representing the computer monitor
+        screen      A pygame.Surface object representing the computer monitor
         """
         self.screen = pygame.display.set_mode(resolution)
 
@@ -138,7 +137,7 @@ class GameScreen:
             pygame.draw.line(self.screen, colour, (0, y), (y_pixels, y))
 
     def colour_cell(self, colour: Tuple[int, int, int], \
-                    mouse_pos: Tuple[int, int]) -> pygame.Rect:
+            mouse_pos: Tuple[int, int]):
         """Change the colour of a cell on screen and return a pygame.Rect
         object for efficient updating of the screen.
         """
@@ -146,7 +145,6 @@ class GameScreen:
         y = mouse_pos[1]//20 * 20
         cell_rect = pygame.Rect(x+1, y+1, 19, 19)  # Offset for grid lines
         pygame.draw.rect(self.screen, colour, cell_rect)
-        return cell_rect
 
 class Graphics:
     """A Graphical implementation of TPGameOfLife."""
@@ -168,7 +166,8 @@ class Graphics:
 
         m1_ready = False      # If M1 is pressed down
         m1_cancelled = False  # If M2 was pressed (thus cancelling M1)
-        update_rect = None    # An area of the screen that changed
+
+        pause = False  # Pause GOL ticks or not
 
         clock = pygame.time.Clock()  # Clock for managing framerate
 
@@ -180,11 +179,16 @@ class Graphics:
             events = pygame.event.get()
             mouse_buttons = pygame.mouse.get_pressed()
 
-            # TODO: System exiting
-
             for event in events:
-                if event.type == GOLTICK:
-                    tpgol.prepare_tick()
+                if event.type == pygame.QUIT:  # Quit game by closing window
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:  # Key presses
+                    key = event.key
+                    if key == pygame.K_ESCAPE:  # Quit game by <Esc>
+                        sys.exit()
+                    elif key == pygame.K_SPACE:  # Pause game
+                        pause = not pause
+                elif event.type == GOLTICK and not pause:  # Update GOL board
                     tpgol.tick()
 
             # Mouse Behaviour:
@@ -219,7 +223,6 @@ class Graphics:
 
             clock.tick(60)
             pygame.display.update()
-
 
 
 if __name__ == '__main__':
