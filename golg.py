@@ -38,8 +38,8 @@ class TPGameOfLife:
         self.columns = columns
         self.rows = rows
 
-    def seed(self, state: int, coordinates: List[Tuple[int]]) -> None:
-        """Set state of multiple Cells on grid."""
+    def modify_cell(self, state: int, coordinates: List[Tuple[int]]) -> None:
+        """Set state of Cells on grid."""
         for coord in coordinates:
             self.grid[coord[0]][coord[1]].state = state
             
@@ -162,16 +162,36 @@ class Graphics:
         self.gs = gs
 
     def start_game(self):
+        """Begin the main game loop."""
         self.gs.draw_grid(self.WHITE)
         pygame.display.update()
-        m1_ready = False
-        m1_cancelled = False
-        update_rect = None
-        clock = pygame.time.Clock()
+
+        m1_ready = False      # If M1 is pressed down
+        m1_cancelled = False  # If M2 was pressed (thus cancelling M1)
+        update_rect = None    # An area of the screen that changed
+
+        clock = pygame.time.Clock()  # Clock for managing framerate
+
+        GOLTICK = pygame.USEREVENT  # Event indicating to update GOL board
+        FREQUENCY = 1000  # How often to update GOL board, in milliseconds
+        pygame.time.set_timer(GOLTICK, FREQUENCY)
 
         while True:
             events = pygame.event.get()
             mouse_buttons = pygame.mouse.get_pressed()
+
+            # TODO: System exiting
+
+            for event in events:
+                if event.type == GOLTICK:
+                    tpgol.prepare_tick()
+                    tpgol.tick()
+
+            # Mouse Behaviour:
+            # For an M1 click to count, M1 must be pressed and let go of.
+            # In addition, pressing M2 will cancel any pending M1 click and
+            # disallow any M1 click so long as any pending M1 click is not
+            # let go of and so long as M2 is held down.
 
             if not m1_cancelled and mouse_buttons[0]:
                 m1_ready = True
@@ -180,16 +200,27 @@ class Graphics:
             if mouse_buttons[2]:
                 m1_ready = False
                 m1_cancelled = True
-            if m1_ready and not mouse_buttons[0]:
-                update_rect = gs.colour_cell(self.GREEN, pygame.mouse.get_pos())
+            if m1_ready and not mouse_buttons[0]:  # Completed press
+                mouse_pos = pygame.mouse.get_pos()
+                coordinates = (mouse_pos[0]//20, mouse_pos[1]//20)
+                tpgol.modify_cell(2, (coordinates,))
                 m1_ready = False
 
+            for x in range(tpgol.columns):
+                for y in range(tpgol.rows):
+                    state = tpgol.grid[x][y].state
+                    if state == tpgol.DEAD:
+                        colour = self.BLACK
+                    elif state == tpgol.RED:
+                        colour = self.RED
+                    elif state == tpgol.GREEN:
+                        colour = self.GREEN
+                    gs.colour_cell(colour, (x*20, y*20))
+
             clock.tick(60)
-            if update_rect:
-                pygame.display.update(update_rect)
-                update_rect = None
-            else:
-                pygame.display.update()
+            pygame.display.update()
+
+
 
 if __name__ == '__main__':
     tpgol = TPGameOfLife(50, 50)
