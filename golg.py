@@ -138,12 +138,15 @@ class GameScreen:
             pygame.draw.line(self.screen, colour, (0, y), (y_pixels, y))
 
     def colour_cell(self, colour: Tuple[int, int, int], \
-                    mouse_pos: Tuple[int, int]):
-        """Change the colour of a cell on screen."""
+                    mouse_pos: Tuple[int, int]) -> pygame.Rect:
+        """Change the colour of a cell on screen and return a pygame.Rect
+        object for efficient updating of the screen.
+        """
         x = mouse_pos[0]//20 * 20
         y = mouse_pos[1]//20 * 20
         cell_rect = pygame.Rect(x+1, y+1, 19, 19)  # Offset for grid lines
         pygame.draw.rect(self.screen, colour, cell_rect)
+        return cell_rect
 
 class Graphics:
     """A Graphical implementation of TPGameOfLife."""
@@ -160,6 +163,33 @@ class Graphics:
 
     def start_game(self):
         self.gs.draw_grid(self.WHITE)
+        pygame.display.update()
+        m1_ready = False
+        m1_cancelled = False
+        update_rect = None
+        clock = pygame.time.Clock()
+
+        while True:
+            events = pygame.event.get()
+            mouse_buttons = pygame.mouse.get_pressed()
+
+            if not m1_cancelled and mouse_buttons[0]:
+                m1_ready = True
+            elif m1_cancelled and not mouse_buttons[0]:
+                m1_cancelled = False
+            if mouse_buttons[2]:
+                m1_ready = False
+                m1_cancelled = True
+            if m1_ready and not mouse_buttons[0]:
+                update_rect = gs.colour_cell(self.GREEN, pygame.mouse.get_pos())
+                m1_ready = False
+
+            clock.tick(60)
+            if update_rect:
+                pygame.display.update(update_rect)
+                update_rect = None
+            else:
+                pygame.display.update()
 
 if __name__ == '__main__':
     tpgol = TPGameOfLife(50, 50)
