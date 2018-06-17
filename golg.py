@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import time
 import random
 import sys
@@ -117,8 +118,8 @@ class TPGameOfLife:
             self.tick()
             time.sleep(0.5)
 
-class GameScreen:
-    """A screen for displaying the main menu and game."""
+class Graphics:
+    """An object for displaying graphics, including the main menu and game."""
     # colour tuples
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
@@ -126,7 +127,7 @@ class GameScreen:
     GREEN = (0, 255, 0)
 
     def __init__(self, resolution: Tuple[int, int]) -> None:
-        """Create a GameScreen object.
+        """Create a Graphics object.
         
         screen      A pygame.Surface object representing the computer monitor
         """
@@ -158,14 +159,50 @@ class GameScreen:
         pygame.draw.rect(self.screen, colour, cell_rect)
 
 
+class GUI(ABC):
+    """A Graphical User Interface, with methods for taking in user input."""
+
+    @abstractmethod
+    def init(self):
+        self.m1_ready = False      # If M1 is pressed down
+        self.m1_cancelled = False  # If M2 was pressed (thus cancelling M1)
+
+    @abstractmethod
+    def start(self):
+        """Start the GUI."""
+        pass
+    
+    def m1_pressed(self, mouse_buttons: Tuple[int, int, int]) -> bool:
+        """Return whether a M1 press has been succesfully completed.
+        
+        Mouse press behaviour:
+        For an M1 click to count, M1 must be pressed and let go of.
+        In addition, pressing M2 will cancel any pending M1 click and
+        disallow any M1 click so long as any pending M1 click is not
+        let go of and so long as M2 is held down.
+        """
+
+        if not self.m1_cancelled and mouse_buttons[0]:
+            self.m1_ready = True
+        elif self.m1_cancelled and not mouse_buttons[0]:
+            self.m1_cancelled = False
+        if mouse_buttons[2]:
+            self.m1_ready = False
+            self.m1_cancelled = True
+        if self.m1_ready and not mouse_buttons[0]:  # Completed press
+            self.m1_ready = False
+            return True
+        return False
+
+
 class Menu:
     """A menu for starting the game and exiting."""
 
-    def __init__(tpgol: TPGameOfLife, gs: GameScreen):
+    def __init__(tpgol: TPGameOfLife, gs: Graphics):
         self.tpgol = tpgol
         self.gs = gs
 
-    def start_menu(self):
+    def start(self):
         """Begin the main menu loop."""
         m1_ready = False      # If M1 is pressed down
         m1_cancelled = False  # If M2 was pressed (thus cancelling M1)
@@ -186,11 +223,11 @@ class Menu:
 class LevelSelect:
     """A menu for selecting a level."""
 
-    def __init__(self, tpgol: TPGameOfLife, gs: GameScreen):
+    def __init__(self, tpgol: TPGameOfLife, gs: Graphics):
         self.tpgol = tpgol
         self.gs = gs
 
-    def start_menu(self):
+    def start(self):
         """Begin the level select menu loop."""
         m1_ready = False      # If M1 is pressed down
         m1_cancelled = False  # If M2 was pressed (thus cancelling M1)
@@ -229,12 +266,12 @@ class LevelSelect:
 class Game:
     """A graphical implementation of TPGameOfLife."""
 
-    def __init__(self, tpgol: TPGameOfLife, gs: GameScreen):
+    def __init__(self, tpgol: TPGameOfLife, gs: Graphics):
         """Create Graphics object."""
         self.tpgol = tpgol
         self.gs = gs
 
-    def start_game(self, level):
+    def start(self, level):
         """Begin the main game loop."""
         self.gs.draw_grid()
         pygame.display.update()
@@ -309,6 +346,6 @@ class Game:
 
 if __name__ == '__main__':
     tpgol = TPGameOfLife(80, 45)
-    gs = GameScreen((1600, 900))
+    gs = Graphics((1600, 900))
     ls = LevelSelect(tpgol, gs)
     ls.start_menu()
