@@ -39,7 +39,7 @@ class TPGameOfLife:
         self.columns = columns
         self.rows = rows
 
-    def modify_cell(self, state: int, coordinates: List[Tuple[int]]) -> None:
+    def modify_cells(self, state: int, coordinates: List[Tuple[int]]) -> None:
         """Set state of Cells on grid."""
         for coord in coordinates:
             self.grid[coord[0]][coord[1]].state = state
@@ -116,9 +116,13 @@ class TPGameOfLife:
             self.tick()
             time.sleep(0.5)
 
-
 class GameScreen:
-    """A screen that vizualizes an instance of TPGameOfLife."""
+    """A screen for displaying the main menu and game."""
+    # colour tuples
+    BLACK = (0, 0, 0)
+    WHITE = (255, 255, 255)
+    RED = (255, 0, 0)
+    GREEN = (0, 255, 0)
 
     def __init__(self, resolution: Tuple[int, int]) -> None:
         """Create a GameScreen object.
@@ -127,32 +131,88 @@ class GameScreen:
         """
         self.screen = pygame.display.set_mode(resolution)
 
-    def draw_grid(self, colour: Tuple[int, int, int]) -> None:
-        """Draw gridlines onto screen."""
+    def draw_menu(self) -> None:
+        """Draw the main menu."""
+        font = pygame.font.SysFont('Arial', 12)
+        text_surface = font.render('Test', False, self.WHITE)
+        self.screen.blit(text_surface, (0, 0))
+        print('f done')
+
+    def draw_grid(self) -> None:
+        """Draw and empty grid onto the screen."""
+        self.screen.fill(self.BLACK)
         x_pixels = pygame.display.Info().current_w
         y_pixels = pygame.display.Info().current_h
         for x in range(0, x_pixels+1, 20):
-            pygame.draw.line(self.screen, colour, (x, 0), (x, x_pixels))
+            pygame.draw.line(self.screen, self.WHITE, (x, 0), (x, y_pixels))
         for y in range(0, y_pixels+1, 20):
-            pygame.draw.line(self.screen, colour, (0, y), (y_pixels, y))
+            pygame.draw.line(self.screen, self.WHITE, (0, y), (x_pixels, y))
 
     def colour_cell(self, colour: Tuple[int, int, int], \
             mouse_pos: Tuple[int, int]):
-        """Change the colour of a cell on screen and return a pygame.Rect
-        object for efficient updating of the screen.
-        """
+        """Change the colour of a cell on screen."""
         x = mouse_pos[0]//20 * 20
         y = mouse_pos[1]//20 * 20
         cell_rect = pygame.Rect(x+1, y+1, 19, 19)  # Offset for grid lines
         pygame.draw.rect(self.screen, colour, cell_rect)
 
-class Graphics:
-    """A Graphical implementation of TPGameOfLife."""
-    # colour tuples
-    BLACK = (0, 0, 0)
-    WHITE = (255, 255, 255)
-    RED = (255, 0, 0)
-    GREEN = (0, 255, 0)
+
+class Menu:
+    """A menu for starting the game and exiting."""
+
+    def __init__(tpgol: TPGameOfLife, gs: GameScreen):
+        self.tpgol = tpgol
+        self.gs = gs
+
+    def start_menu(self):
+        """Begin the main menu loop."""
+        m1_ready = False      # If M1 is pressed down
+        m1_cancelled = False  # If M2 was pressed (thus cancelling M1)
+
+        while True:
+            if not m1_cancelled and mouse_buttons[0]:
+                m1_ready = True
+            elif m1_cancelled and not mouse_buttons[0]:
+                m1_cancelled = False
+            if mouse_buttons[2]:
+                m1_ready = False
+                m1_cancelled = True
+            if m1_ready and not mouse_buttons[0]:  # Completed press
+                mouse_pos = pygame.mouse.get_pos()
+                m1_ready = False
+
+
+class LevelSelect:
+    """A menu for selecting a level."""
+
+    def __init__(self, tpgol: TPGameOfLife, gs: GameScreen):
+        self.tpgol = tpgol
+        self.gs = gs
+
+    def start_menu(self):
+        """Begin the level select menu loop."""
+        m1_ready = False      # If M1 is pressed down
+        m1_cancelled = False  # If M2 was pressed (thus cancelling M1)
+        level = None  # Name of level selected by user
+
+        while True:
+            if not m1_cancelled and mouse_buttons[0]:
+                m1_ready = True
+            elif m1_cancelled and not mouse_buttons[0]:
+                m1_cancelled = False
+            if mouse_buttons[2]:
+                m1_ready = False
+                m1_cancelled = True
+            if m1_ready and not mouse_buttons[0]:  # Completed press
+                mouse_pos = pygame.mouse.get_pos()
+
+            if level:
+                g = Game(tpgol, gs)
+                g.start_game(level)
+
+
+class Game:
+    """A graphical implementation of TPGameOfLife."""
 
     def __init__(self, tpgol: TPGameOfLife, gs: GameScreen):
         """Create Graphics object."""
@@ -161,7 +221,7 @@ class Graphics:
 
     def start_game(self):
         """Begin the main game loop."""
-        self.gs.draw_grid(self.WHITE)
+        self.gs.draw_grid()
         pygame.display.update()
 
         m1_ready = False      # If M1 is pressed down
@@ -205,20 +265,18 @@ class Graphics:
                 m1_ready = False
                 m1_cancelled = True
             if m1_ready and not mouse_buttons[0]:  # Completed press
-                mouse_pos = pygame.mouse.get_pos()
-                coordinates = (mouse_pos[0]//20, mouse_pos[1]//20)
-                tpgol.modify_cell(2, (coordinates,))
+                tpgol.modify_cells(2, (coordinates,))
                 m1_ready = False
 
             for x in range(tpgol.columns):
                 for y in range(tpgol.rows):
                     state = tpgol.grid[x][y].state
                     if state == tpgol.DEAD:
-                        colour = self.BLACK
+                        colour = gs.BLACK
                     elif state == tpgol.RED:
-                        colour = self.RED
+                        colour = gs.RED
                     elif state == tpgol.GREEN:
-                        colour = self.GREEN
+                        colour = gs.GREEN
                     gs.colour_cell(colour, (x*20, y*20))
 
             clock.tick(60)
@@ -226,7 +284,7 @@ class Graphics:
 
 
 if __name__ == '__main__':
-    tpgol = TPGameOfLife(50, 50)
-    gs = GameScreen((500, 500))
-    g = Graphics(tpgol, gs)
+    tpgol = TPGameOfLife(80, 45)
+    gs = GameScreen((1600, 900))
+    g = Game(tpgol, gs)
     g.start_game()
