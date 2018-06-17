@@ -6,6 +6,7 @@ from typing import List, Tuple
 import pygame
 pygame.init()
 
+# TODO: max births availible, wht happen if you press on red
 
 class Cell:
     """A cell within a grid in a TPGameOfLife"""
@@ -193,9 +194,12 @@ class LevelSelect:
         """Begin the level select menu loop."""
         m1_ready = False      # If M1 is pressed down
         m1_cancelled = False  # If M2 was pressed (thus cancelling M1)
-        level = None  # Name of level selected by user
+        level = None  # Level selected by user
 
         while True:
+            pygame.event.get()
+            mouse_buttons = pygame.mouse.get_pressed()
+
             if not m1_cancelled and mouse_buttons[0]:
                 m1_ready = True
             elif m1_cancelled and not mouse_buttons[0]:
@@ -205,6 +209,17 @@ class LevelSelect:
                 m1_cancelled = True
             if m1_ready and not mouse_buttons[0]:  # Completed press
                 mouse_pos = pygame.mouse.get_pos()
+                x, y = mouse_pos[0], mouse_pos[1]
+                x_pixels = pygame.display.Info().current_w
+                y_pixels = pygame.display.Info().current_h
+                if x in range(0, x_pixels//3) and y in range(0, y_pixels//2):
+                    level = 1  # r-pentomino
+                elif (x in range(x_pixels//3, 2*x_pixels//3)
+                      and y in range(0, y_pixels//2)):
+                    level = 2  # Glider gun
+                elif (x in range(2*x_pixels//3, x_pixels)
+                      and y in range(0, y_pixels//2)):
+                    level = 3  # Random bombs
 
             if level:
                 g = Game(tpgol, gs)
@@ -219,14 +234,13 @@ class Game:
         self.tpgol = tpgol
         self.gs = gs
 
-    def start_game(self):
+    def start_game(self, level):
         """Begin the main game loop."""
         self.gs.draw_grid()
         pygame.display.update()
 
         m1_ready = False      # If M1 is pressed down
         m1_cancelled = False  # If M2 was pressed (thus cancelling M1)
-
         pause = False  # Pause GOL ticks or not
 
         clock = pygame.time.Clock()  # Clock for managing framerate
@@ -234,6 +248,11 @@ class Game:
         GOLTICK = pygame.USEREVENT  # Event indicating to update GOL board
         FREQUENCY = 1000  # How often to update GOL board, in milliseconds
         pygame.time.set_timer(GOLTICK, FREQUENCY)
+
+        if level == 1:
+            availible_births = 5
+            tpgol.modify_cells(tpgol.RED, [(20, 19), (20, 20), (20, 21),
+                               (21, 21), (19, 20)])
 
         while True:
             events = pygame.event.get()
@@ -249,6 +268,7 @@ class Game:
                     elif key == pygame.K_SPACE:  # Pause game
                         pause = not pause
                 elif event.type == GOLTICK and not pause:  # Update GOL board
+                    availible_births += 1
                     tpgol.tick()
 
             # Mouse Behaviour:
@@ -265,7 +285,11 @@ class Game:
                 m1_ready = False
                 m1_cancelled = True
             if m1_ready and not mouse_buttons[0]:  # Completed press
-                tpgol.modify_cells(2, (coordinates,))
+                if availible_births >= 1:
+                    mouse_pos = pygame.mouse.get_pos()
+                    coordinates = (mouse_pos[0]//20, mouse_pos[1]//20) 
+                    tpgol.modify_cells(2, (coordinates,))
+                    availible_births -= 1  # One free birth per second
                 m1_ready = False
 
             for x in range(tpgol.columns):
@@ -286,5 +310,5 @@ class Game:
 if __name__ == '__main__':
     tpgol = TPGameOfLife(80, 45)
     gs = GameScreen((1600, 900))
-    g = Game(tpgol, gs)
-    g.start_game()
+    ls = LevelSelect(tpgol, gs)
+    ls.start_menu()
