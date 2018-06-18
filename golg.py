@@ -162,26 +162,30 @@ class Graphics:
 class GUI(ABC):
     """A Graphical User Interface, with methods for taking in user input."""
 
-    @abstractmethod
     def init(self):
-        self.m1_ready = False      # If M1 is pressed down
-        self.m1_cancelled = False  # If M2 was pressed (thus cancelling M1)
+        self.m1_ready = False
+        self.m1_cancelled = False
 
     @abstractmethod
     def start(self):
         """Start the GUI."""
         pass
-    
+
+    def check_quit(self, event: pygame.event.EventType) -> None:
+        """Terminate program if event calls for it."""
+        if (event.type == pygame.QUIT or
+            event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+            sys.exit()
+
     def m1_pressed(self, mouse_buttons: Tuple[int, int, int]) -> bool:
         """Return whether a M1 press has been succesfully completed.
-        
+
         Mouse press behaviour:
         For an M1 click to count, M1 must be pressed and let go of.
         In addition, pressing M2 will cancel any pending M1 click and
         disallow any M1 click so long as any pending M1 click is not
         let go of and so long as M2 is held down.
         """
-
         if not self.m1_cancelled and mouse_buttons[0]:
             self.m1_ready = True
         elif self.m1_cancelled and not mouse_buttons[0]:
@@ -195,35 +199,26 @@ class GUI(ABC):
         return False
 
 
-class Menu:
+class Menu(GUI):
     """A menu for starting the game and exiting."""
 
     def __init__(tpgol: TPGameOfLife, gs: Graphics):
+        super().__init__()
         self.tpgol = tpgol
         self.gs = gs
 
     def start(self):
         """Begin the main menu loop."""
-        m1_ready = False      # If M1 is pressed down
-        m1_cancelled = False  # If M2 was pressed (thus cancelling M1)
 
         while True:
-            if not m1_cancelled and mouse_buttons[0]:
-                m1_ready = True
-            elif m1_cancelled and not mouse_buttons[0]:
-                m1_cancelled = False
-            if mouse_buttons[2]:
-                m1_ready = False
-                m1_cancelled = True
-            if m1_ready and not mouse_buttons[0]:  # Completed press
-                mouse_pos = pygame.mouse.get_pos()
-                m1_ready = False
+            pass
 
 
-class LevelSelect:
+class LevelSelect(GUI):
     """A menu for selecting a level."""
 
     def __init__(self, tpgol: TPGameOfLife, gs: Graphics):
+        super().__init__()  
         self.tpgol = tpgol
         self.gs = gs
 
@@ -263,21 +258,22 @@ class LevelSelect:
                 g.start_game(level)
 
 
-class Game:
-    """A graphical implementation of TPGameOfLife."""
+class Game(GUI):
+    """A gamified, graphical implementation of TPGameOfLife."""
 
     def __init__(self, tpgol: TPGameOfLife, gs: Graphics):
         """Create Graphics object."""
+        super().__init__()
         self.tpgol = tpgol
         self.gs = gs
+        self.m1_ready = False
+        self.m1_cancelled = False
 
     def start(self, level):
         """Begin the main game loop."""
         self.gs.draw_grid()
         pygame.display.update()
 
-        m1_ready = False      # If M1 is pressed down
-        m1_cancelled = False  # If M2 was pressed (thus cancelling M1)
         pause = False  # Pause GOL ticks or not
 
         clock = pygame.time.Clock()  # Clock for managing framerate
@@ -285,6 +281,7 @@ class Game:
         GOLTICK = pygame.USEREVENT  # Event indicating to update GOL board
         FREQUENCY = 1000  # How often to update GOL board, in milliseconds
         pygame.time.set_timer(GOLTICK, FREQUENCY)
+
 
         if level == 1:
             availible_births = 5
@@ -296,32 +293,15 @@ class Game:
             mouse_buttons = pygame.mouse.get_pressed()
 
             for event in events:
-                if event.type == pygame.QUIT:  # Quit game by closing window
-                    sys.exit()
-                elif event.type == pygame.KEYDOWN:  # Key presses
-                    key = event.key
-                    if key == pygame.K_ESCAPE:  # Quit game by <Esc>
-                        sys.exit()
-                    elif key == pygame.K_SPACE:  # Pause game
+                self.check_quit(event)
+                if event.type == pygame.KEYDOWN:  # Key presses
+                    if event.key == pygame.K_SPACE:  # Pause game
                         pause = not pause
                 elif event.type == GOLTICK and not pause:  # Update GOL board
                     availible_births += 1
                     tpgol.tick()
 
-            # Mouse Behaviour:
-            # For an M1 click to count, M1 must be pressed and let go of.
-            # In addition, pressing M2 will cancel any pending M1 click and
-            # disallow any M1 click so long as any pending M1 click is not
-            # let go of and so long as M2 is held down.
-
-            if not m1_cancelled and mouse_buttons[0]:
-                m1_ready = True
-            elif m1_cancelled and not mouse_buttons[0]:
-                m1_cancelled = False
-            if mouse_buttons[2]:
-                m1_ready = False
-                m1_cancelled = True
-            if m1_ready and not mouse_buttons[0]:  # Completed press
+            if self.m1_pressed(mouse_buttons):
                 if availible_births >= 1:
                     mouse_pos = pygame.mouse.get_pos()
                     coordinates = (mouse_pos[0]//20, mouse_pos[1]//20) 
@@ -348,4 +328,5 @@ if __name__ == '__main__':
     tpgol = TPGameOfLife(80, 45)
     gs = Graphics((1600, 900))
     ls = LevelSelect(tpgol, gs)
-    ls.start_menu()
+    g = Game(tpgol, gs)
+    g.start(1)
