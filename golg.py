@@ -209,10 +209,12 @@ class Menu(GUI):
 
     def start(self):
         """Begin the main menu loop."""
-
         while True:
-            pass
+            events = pygame.event.get()
+            mouse_buttons = pygame.mouse.get_pressed()
 
+            for event in events:
+                self.check_quit(event)
 
 class LevelSelect(GUI):
     """A menu for selecting a level."""
@@ -229,17 +231,13 @@ class LevelSelect(GUI):
         level = None  # Level selected by user
 
         while True:
-            pygame.event.get()
+            events = pygame.event.get()
             mouse_buttons = pygame.mouse.get_pressed()
 
-            if not m1_cancelled and mouse_buttons[0]:
-                m1_ready = True
-            elif m1_cancelled and not mouse_buttons[0]:
-                m1_cancelled = False
-            if mouse_buttons[2]:
-                m1_ready = False
-                m1_cancelled = True
-            if m1_ready and not mouse_buttons[0]:  # Completed press
+            for event in events:
+                self.check_quit(event)
+
+            if self.m1_pressed(mouse_buttons):
                 mouse_pos = pygame.mouse.get_pos()
                 x, y = mouse_pos[0], mouse_pos[1]
                 x_pixels = pygame.display.Info().current_w
