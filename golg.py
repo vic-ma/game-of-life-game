@@ -150,8 +150,6 @@ class Graphics:
                    + ((y_frac[0]-1)/y_frac[1]) * self.y_pixels)
         self.screen.blit(word_surface, (x_coord, y_coord))
 
-        print(word, font.size(word))
-
     def draw_menu(self) -> None:
         """Draw the main menu."""
         title_font = pygame.font.SysFont('Arial', 100)
@@ -164,10 +162,10 @@ class Graphics:
         """Draw and empty grid onto the screen."""
         self.screen.fill(self.BLACK)
         for x in range(0, self.x_pixels+1, 20):
-            pygame.draw.line(self.screen, self.WHITE, (x, 0), 
+            pygame.draw.line(self.screen, self.WHITE, (x, 0),
                              (x, self.y_pixels))
         for y in range(0, self.y_pixels+1, 20):
-            pygame.draw.line(self.screen, self.WHITE, (0, y), 
+            pygame.draw.line(self.screen, self.WHITE, (0, y),
                              (self.x_pixels, y))
 
     def colour_cell(self, colour: Tuple[int, int, int], \
@@ -182,7 +180,7 @@ class Graphics:
 class GUI(ABC):
     """A Graphical User Interface, with methods for taking in user input."""
 
-    def init(self):
+    def __init__(self):
         self.m1_ready = False
         self.m1_cancelled = False
 
@@ -219,29 +217,32 @@ class GUI(ABC):
         return False
 
 
-class Menu(GUI):
+class MainMenu(GUI):
     """A menu for starting the game and exiting."""
 
-    def __init__(tpgol: TPGameOfLife, gr: Graphics):
+    def __init__(self, tpgol: TPGameOfLife, gr: Graphics):
         super().__init__()
         self.tpgol = tpgol
         self.gr = gr
 
     def start(self):
         """Begin the main menu loop."""
+        gr.draw_menu()
+        pygame.display.update()
+
         while True:
             events = pygame.event.get()
             mouse_buttons = pygame.mouse.get_pressed()
-
             for event in events:
                 self.check_quit(event)
-
             if self.m1_pressed(mouse_buttons):
                 mouse_pos = pygame.mouse.get_pos()
                 x, y = mouse_pos[0], mouse_pos[1]
-                pass
-            if x in range(1):
-                pass
+                if x in range(425, 1180) and y in range(340, 565):
+                    ls = LevelSelect(tpgol, gr)
+                    ls.start()
+                elif x in range(560, 1040) and y in range(640, 865):
+                    sys.exit()
 
 class LevelSelect(GUI):
     """A menu for selecting a level."""
@@ -353,9 +354,8 @@ class Game(GUI):
 if __name__ == '__main__':
     tpgol = TPGameOfLife(80, 45)
     gr = Graphics((1600, 900))
-    gr.draw_menu()
-    pygame.display.update()
-    time.sleep(20)
-    ls = LevelSelect(tpgol, gr)
-    g = Game(tpgol, gr)
-    g.start(1)
+    m = MainMenu(tpgol, gr)
+    m.start()
+    #ls = LevelSelect(tpgol, gr)
+    #g = Game(tpgol, gr)
+    #g.start(1)
