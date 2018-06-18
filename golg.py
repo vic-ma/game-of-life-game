@@ -7,7 +7,7 @@ from typing import List, Tuple
 import pygame
 pygame.init()
 
-# TODO: max births availible, wht happen if you press on red
+# TODO: max births availible, wht happen if you press on red, limit birth area
 
 class Cell:
     """A cell within a grid in a TPGameOfLife"""
@@ -98,7 +98,7 @@ class TPGameOfLife:
             for y in range(self.rows):
                 self.grid[x][y].state = self.grid[x][y].next_state
 
-    def display(self) -> None:
+    def print(self) -> None:
         """Print grid in ASCII"""
         for y in reversed(range(self.rows)):
             for x in range(self.columns):
@@ -132,23 +132,43 @@ class Graphics:
         screen      A pygame.Surface object representing the computer monitor
         """
         self.screen = pygame.display.set_mode(resolution)
+        self.x_pixels = resolution[0]
+        self.y_pixels = resolution[1]
+
+    def draw_text(self, font: pygame.font.Font, word: str,
+                  x_frac: Tuple[int, int], y_frac: Tuple[int, int]):
+        """Draw text onto the screen.
+
+        x_frac and y_frac are tuples where the first element is the numerator and
+        the second element is the denominator in a fraction that splits the
+        screen lengthwise and widthwise, respectively.
+        """
+        word_surface = font.render(word, True, self.WHITE)
+        x_coord = (((self.x_pixels/x_frac[1] - font.size(word)[0]) / 2)
+                   + ((x_frac[0]-1)/x_frac[1]) * self.x_pixels)
+        y_coord = (((self.y_pixels/y_frac[1] - font.size(word)[1]) / 2)
+                   + ((y_frac[0]-1)/y_frac[1]) * self.y_pixels)
+        self.screen.blit(word_surface, (x_coord, y_coord))
+
+        print(word, font.size(word))
 
     def draw_menu(self) -> None:
         """Draw the main menu."""
-        font = pygame.font.SysFont('Arial', 12)
-        text_surface = font.render('Test', False, self.WHITE)
-        self.screen.blit(text_surface, (0, 0))
-        print('f done')
+        title_font = pygame.font.SysFont('Arial', 100)
+        button_font = pygame.font.SysFont('Arial', 200)
+        self.draw_text(title_font, 'Game of Life Game', (1,1), (1,3))
+        self.draw_text(button_font, 'LEVELS', (1,1), (2,3))
+        self.draw_text(button_font, 'QUIT', (1,1), (3,3))
 
     def draw_grid(self) -> None:
         """Draw and empty grid onto the screen."""
         self.screen.fill(self.BLACK)
-        x_pixels = pygame.display.Info().current_w
-        y_pixels = pygame.display.Info().current_h
-        for x in range(0, x_pixels+1, 20):
-            pygame.draw.line(self.screen, self.WHITE, (x, 0), (x, y_pixels))
-        for y in range(0, y_pixels+1, 20):
-            pygame.draw.line(self.screen, self.WHITE, (0, y), (x_pixels, y))
+        for x in range(0, self.x_pixels+1, 20):
+            pygame.draw.line(self.screen, self.WHITE, (x, 0), 
+                             (x, self.y_pixels))
+        for y in range(0, self.y_pixels+1, 20):
+            pygame.draw.line(self.screen, self.WHITE, (0, y), 
+                             (self.x_pixels, y))
 
     def colour_cell(self, colour: Tuple[int, int, int], \
             mouse_pos: Tuple[int, int]):
@@ -202,10 +222,10 @@ class GUI(ABC):
 class Menu(GUI):
     """A menu for starting the game and exiting."""
 
-    def __init__(tpgol: TPGameOfLife, gs: Graphics):
+    def __init__(tpgol: TPGameOfLife, gr: Graphics):
         super().__init__()
         self.tpgol = tpgol
-        self.gs = gs
+        self.gr = gr
 
     def start(self):
         """Begin the main menu loop."""
@@ -216,13 +236,20 @@ class Menu(GUI):
             for event in events:
                 self.check_quit(event)
 
+            if self.m1_pressed(mouse_buttons):
+                mouse_pos = pygame.mouse.get_pos()
+                x, y = mouse_pos[0], mouse_pos[1]
+                pass
+            if x in range(1):
+                pass
+
 class LevelSelect(GUI):
     """A menu for selecting a level."""
 
-    def __init__(self, tpgol: TPGameOfLife, gs: Graphics):
+    def __init__(self, tpgol: TPGameOfLife, gr: Graphics):
         super().__init__()  
         self.tpgol = tpgol
-        self.gs = gs
+        self.gr = gr
 
     def start(self):
         """Begin the level select menu loop."""
@@ -252,24 +279,24 @@ class LevelSelect(GUI):
                     level = 3  # Random bombs
 
             if level:
-                g = Game(tpgol, gs)
+                g = Game(tpgol, gr)
                 g.start_game(level)
 
 
 class Game(GUI):
     """A gamified, graphical implementation of TPGameOfLife."""
 
-    def __init__(self, tpgol: TPGameOfLife, gs: Graphics):
+    def __init__(self, tpgol: TPGameOfLife, gr: Graphics):
         """Create Graphics object."""
         super().__init__()
         self.tpgol = tpgol
-        self.gs = gs
+        self.gr = gr
         self.m1_ready = False
         self.m1_cancelled = False
 
     def start(self, level):
         """Begin the main game loop."""
-        self.gs.draw_grid()
+        self.gr.draw_grid()
         pygame.display.update()
 
         pause = False  # Pause GOL ticks or not
@@ -285,6 +312,7 @@ class Game(GUI):
             availible_births = 5
             tpgol.modify_cells(tpgol.RED, [(20, 19), (20, 20), (20, 21),
                                (21, 21), (19, 20)])
+            # Use a method for levels so they can have highlights for birth
 
         while True:
             events = pygame.event.get()
@@ -311,12 +339,12 @@ class Game(GUI):
                 for y in range(tpgol.rows):
                     state = tpgol.grid[x][y].state
                     if state == tpgol.DEAD:
-                        colour = gs.BLACK
+                        colour = gr.BLACK
                     elif state == tpgol.RED:
-                        colour = gs.RED
+                        colour = gr.RED
                     elif state == tpgol.GREEN:
-                        colour = gs.GREEN
-                    gs.colour_cell(colour, (x*20, y*20))
+                        colour = gr.GREEN
+                    gr.colour_cell(colour, (x*20, y*20))
 
             clock.tick(60)
             pygame.display.update()
@@ -324,7 +352,10 @@ class Game(GUI):
 
 if __name__ == '__main__':
     tpgol = TPGameOfLife(80, 45)
-    gs = Graphics((1600, 900))
-    ls = LevelSelect(tpgol, gs)
-    g = Game(tpgol, gs)
+    gr = Graphics((1600, 900))
+    gr.draw_menu()
+    pygame.display.update()
+    time.sleep(20)
+    ls = LevelSelect(tpgol, gr)
+    g = Game(tpgol, gr)
     g.start(1)
