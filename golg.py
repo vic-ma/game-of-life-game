@@ -162,13 +162,13 @@ class Graphics:
     def draw_level_select(self) -> None:
         """Draw the level select menu."""
         self.screen.fill(self.BLACK)
-        button_font = pygame.font.SysFont('Arial', 400)
-        self.draw_text(button_font, '1', (1, 3), (1, 2))
-        self.draw_text(button_font, '2', (2, 3), (1, 2))
-        self.draw_text(button_font, '3', (3, 3), (1, 2))
-        self.draw_text(button_font, '4', (1, 3), (2, 2))
-        self.draw_text(button_font, '5', (2, 3), (2, 2))
-        self.draw_text(button_font, '6', (3, 3), (2, 2))
+        level_font = pygame.font.SysFont('Arial', 400)
+        self.draw_text(level_font, '1', (1, 3), (1, 2))
+        self.draw_text(level_font, '2', (2, 3), (1, 2))
+        self.draw_text(level_font, '3', (3, 3), (1, 2))
+        self.draw_text(level_font, '4', (1, 3), (2, 2))
+        self.draw_text(level_font, '5', (2, 3), (2, 2))
+        self.draw_text(level_font, '6', (3, 3), (2, 2))
 
     def draw_grid(self) -> None:
         """Draw and empty grid onto the screen."""
@@ -264,13 +264,11 @@ class LevelSelect(GUI):
 
     def start(self):
         """Begin the level select menu loop."""
-        m1_ready = False      # If M1 is pressed down
-        m1_cancelled = False  # If M2 was pressed (thus cancelling M1)
         level = None  # Level selected by user
 
         self.gr.draw_level_select()
         pygame.display.flip()
-        pygame.display.flip()
+        pygame.display.flip()  # This is not a typo.
 
         while True:
             events = pygame.event.get()
@@ -307,7 +305,6 @@ class LevelSelect(GUI):
                 print(level)
                 g.start(level)
 
-
 class Game(GUI):
     """A gamified, graphical implementation of TPGameOfLife."""
 
@@ -316,8 +313,6 @@ class Game(GUI):
         super().__init__(tpgol, gr)
         self.tpgol = tpgol
         self.gr = gr
-        self.m1_ready = False
-        self.m1_cancelled = False
 
     def start(self, level):
         """Begin the main game loop."""
@@ -370,14 +365,6 @@ class Game(GUI):
 
             clock.tick(60)
             pygame.display.flip()
-
-class Test():
-    def __init__(self, tpgol: TPGameOfLife, gr: Graphics):
-        pass
-    def test_g(self):
-        print(gr)
-    def start(self):
-        pass
 
 if __name__ == '__main__':
     tpgol = TPGameOfLife(80, 45)
