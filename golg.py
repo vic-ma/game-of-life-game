@@ -150,13 +150,25 @@ class Graphics:
                    + ((y_frac[0]-1)/y_frac[1]) * self.y_pixels)
         self.screen.blit(word_surface, (x_coord, y_coord))
 
-    def draw_menu(self) -> None:
+    def draw_main_menu(self) -> None:
         """Draw the main menu."""
+        self.screen.fill(self.BLACK)
         title_font = pygame.font.SysFont('Arial', 100)
         button_font = pygame.font.SysFont('Arial', 200)
-        self.draw_text(title_font, 'Game of Life Game', (1,1), (1,3))
-        self.draw_text(button_font, 'LEVELS', (1,1), (2,3))
-        self.draw_text(button_font, 'QUIT', (1,1), (3,3))
+        self.draw_text(title_font, 'Game of Life Game', (1, 1), (1, 3))
+        self.draw_text(button_font, 'LEVELS', (1, 1), (2, 3))
+        self.draw_text(button_font, 'QUIT', (1, 1), (3, 3))
+
+    def draw_level_select(self) -> None:
+        """Draw the level select menu."""
+        self.screen.fill(self.BLACK)
+        button_font = pygame.font.SysFont('Arial', 400)
+        self.draw_text(button_font, '1', (1, 3), (1, 2))
+        self.draw_text(button_font, '2', (2, 3), (1, 2))
+        self.draw_text(button_font, '3', (3, 3), (1, 2))
+        self.draw_text(button_font, '4', (1, 3), (2, 2))
+        self.draw_text(button_font, '5', (2, 3), (2, 2))
+        self.draw_text(button_font, '6', (3, 3), (2, 2))
 
     def draw_grid(self) -> None:
         """Draw and empty grid onto the screen."""
@@ -180,7 +192,9 @@ class Graphics:
 class GUI(ABC):
     """A Graphical User Interface, with methods for taking in user input."""
 
-    def __init__(self):
+    def __init__(self, tpgol: TPGameOfLife, gr: Graphics):
+        self.tpgol = tpgol
+        self.gr = gr
         self.m1_ready = False
         self.m1_cancelled = False
 
@@ -221,14 +235,12 @@ class MainMenu(GUI):
     """A menu for starting the game and exiting."""
 
     def __init__(self, tpgol: TPGameOfLife, gr: Graphics):
-        super().__init__()
-        self.tpgol = tpgol
-        self.gr = gr
+        super().__init__(tpgol, gr)
 
     def start(self):
         """Begin the main menu loop."""
-        gr.draw_menu()
-        pygame.display.update()
+        gr.draw_main_menu()
+        pygame.display.flip()
 
         while True:
             events = pygame.event.get()
@@ -248,15 +260,17 @@ class LevelSelect(GUI):
     """A menu for selecting a level."""
 
     def __init__(self, tpgol: TPGameOfLife, gr: Graphics):
-        super().__init__()  
-        self.tpgol = tpgol
-        self.gr = gr
+        super().__init__(tpgol, gr)
 
     def start(self):
         """Begin the level select menu loop."""
         m1_ready = False      # If M1 is pressed down
         m1_cancelled = False  # If M2 was pressed (thus cancelling M1)
         level = None  # Level selected by user
+
+        self.gr.draw_level_select()
+        pygame.display.flip()
+        pygame.display.flip()
 
         while True:
             events = pygame.event.get()
@@ -271,17 +285,27 @@ class LevelSelect(GUI):
                 x_pixels = pygame.display.Info().current_w
                 y_pixels = pygame.display.Info().current_h
                 if x in range(0, x_pixels//3) and y in range(0, y_pixels//2):
-                    level = 1  # r-pentomino
+                    level = 1
                 elif (x in range(x_pixels//3, 2*x_pixels//3)
                       and y in range(0, y_pixels//2)):
-                    level = 2  # Glider gun
+                    level = 2
                 elif (x in range(2*x_pixels//3, x_pixels)
                       and y in range(0, y_pixels//2)):
-                    level = 3  # Random bombs
+                    level = 3
+                elif (x in range(0, x_pixels//3)
+                      and y in range(y_pixels//2, y_pixels)):
+                    level = 4
+                elif (x in range(x_pixels//3, 2*x_pixels//3)
+                      and y in range(y_pixels//2, y_pixels)):
+                    level = 5
+                elif (x in range(2*x_pixels//3, x_pixels)
+                      and y in range(y_pixels//2, y_pixels)):
+                    level = 6
 
             if level:
                 g = Game(tpgol, gr)
-                g.start_game(level)
+                print(level)
+                g.start(level)
 
 
 class Game(GUI):
@@ -289,7 +313,7 @@ class Game(GUI):
 
     def __init__(self, tpgol: TPGameOfLife, gr: Graphics):
         """Create Graphics object."""
-        super().__init__()
+        super().__init__(tpgol, gr)
         self.tpgol = tpgol
         self.gr = gr
         self.m1_ready = False
@@ -298,12 +322,9 @@ class Game(GUI):
     def start(self, level):
         """Begin the main game loop."""
         self.gr.draw_grid()
-        pygame.display.update()
 
         pause = False  # Pause GOL ticks or not
-
         clock = pygame.time.Clock()  # Clock for managing framerate
-
         GOLTICK = pygame.USEREVENT  # Event indicating to update GOL board
         FREQUENCY = 1000  # How often to update GOL board, in milliseconds
         pygame.time.set_timer(GOLTICK, FREQUENCY)
@@ -348,14 +369,18 @@ class Game(GUI):
                     gr.colour_cell(colour, (x*20, y*20))
 
             clock.tick(60)
-            pygame.display.update()
+            pygame.display.flip()
 
+class Test():
+    def __init__(self, tpgol: TPGameOfLife, gr: Graphics):
+        pass
+    def test_g(self):
+        print(gr)
+    def start(self):
+        pass
 
 if __name__ == '__main__':
     tpgol = TPGameOfLife(80, 45)
     gr = Graphics((1600, 900))
     m = MainMenu(tpgol, gr)
     m.start()
-    #ls = LevelSelect(tpgol, gr)
-    #g = Game(tpgol, gr)
-    #g.start(1)
