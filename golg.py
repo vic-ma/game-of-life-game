@@ -7,12 +7,11 @@ from typing import List, Tuple
 import pygame
 pygame.init()
 
-# TODO: max births availible, wht happen if you press on red, limit birth area
 
 class Cell:
     """A cell within a grid in a TPGameOfLife"""
 
-    def __init__(self, state: int):
+    def __init__(self, state: int) -> None:
         """Create Cell object.
 
         state           The state of the Cell (dead=0/red=1/green=2)
@@ -110,13 +109,14 @@ class TPGameOfLife:
                     print('-', end='')
             print()
 
-    def play(self) -> None:
+    def start(self) -> None:
         """Start running the Game of Life via display()"""
         while True:
             print()
             self.display()
             self.tick()
             time.sleep(0.5)
+
 
 class Graphics:
     """An object for displaying graphics, including the main menu and game."""
@@ -132,12 +132,13 @@ class Graphics:
         screen      A pygame.Surface object representing the computer monitor
         """
         self.screen = pygame.display.set_mode(resolution)
-        self.x_pixels = resolution[0]
-        self.y_pixels = resolution[1]
+        self.x_pixels = (resolution[0]//20)*20
+        self.y_pixels = (resolution[1]//20)*20
 
     def draw_text(self, font: pygame.font.Font, word: str,
-                  x_frac: Tuple[int, int], y_frac: Tuple[int, int]):
-        """Draw text onto the screen.
+                  x_frac: Tuple[int, int], y_frac: Tuple[int, int]) \
+                  -> pygame.Rect:
+        """Draw text onto the screen and return the corresponding pygame.Rect.
 
         x_frac and y_frac are tuples where the first element is the numerator and
         the second element is the denominator in a fraction that splits the
@@ -149,15 +150,20 @@ class Graphics:
         y_coord = (((self.y_pixels/y_frac[1] - font.size(word)[1]) / 2)
                    + ((y_frac[0]-1)/y_frac[1]) * self.y_pixels)
         self.screen.blit(word_surface, (x_coord, y_coord))
+        return pygame.Rect((x_coord, y_coord), (font.size(word)[0],
+                            font.size(word)[1]))
 
-    def draw_main_menu(self) -> None:
-        """Draw the main menu."""
+    def draw_main_menu(self) -> List[pygame.Rect]:
+        """Draw the main menu and return the pygame.Rect that represent the
+        buttons, top to bottom.
+        """
         self.screen.fill(self.BLACK)
         title_font = pygame.font.SysFont('Arial', 100)
         button_font = pygame.font.SysFont('Arial', 200)
         self.draw_text(title_font, 'Game of Life Game', (1, 1), (1, 3))
-        self.draw_text(button_font, 'LEVELS', (1, 1), (2, 3))
-        self.draw_text(button_font, 'QUIT', (1, 1), (3, 3))
+        b1 = self.draw_text(button_font, 'LEVELS', (1, 1), (2, 3))
+        b2 = self.draw_text(button_font, 'QUIT', (1, 1), (3, 3))
+        return (b1, b2)
 
     def draw_level_select(self) -> None:
         """Draw the level select menu."""
@@ -239,7 +245,7 @@ class MainMenu(GUI):
 
     def start(self):
         """Begin the main menu loop."""
-        gr.draw_main_menu()
+        button_rects = gr.draw_main_menu()
         pygame.display.flip()
 
         while True:
@@ -249,12 +255,12 @@ class MainMenu(GUI):
                 self.check_quit(event)
             if self.m1_pressed(mouse_buttons):
                 mouse_pos = pygame.mouse.get_pos()
-                x, y = mouse_pos[0], mouse_pos[1]
-                if x in range(425, 1180) and y in range(340, 565):
+                if button_rects[0].collidepoint(mouse_pos):
                     ls = LevelSelect(tpgol, gr)
                     ls.start()
-                elif x in range(560, 1040) and y in range(640, 865):
+                elif button_rects[1].collidepoint(mouse_pos):
                     sys.exit()
+
 
 class LevelSelect(GUI):
     """A menu for selecting a level."""
@@ -268,7 +274,7 @@ class LevelSelect(GUI):
 
         self.gr.draw_level_select()
         pygame.display.flip()
-        pygame.display.flip()  # This is not a typo.
+        pygame.display.flip()  # This is not a typo
 
         while True:
             events = pygame.event.get()
@@ -302,19 +308,26 @@ class LevelSelect(GUI):
 
             if level:
                 g = Game(tpgol, gr)
-                print(level)
                 g.start(level)
+
 
 class Game(GUI):
     """A gamified, graphical implementation of TPGameOfLife."""
 
-    def __init__(self, tpgol: TPGameOfLife, gr: Graphics):
+    def __init__(self, tpgol: TPGameOfLife, gr: Graphics) -> None:
         """Create Graphics object."""
         super().__init__(tpgol, gr)
         self.tpgol = tpgol
         self.gr = gr
 
-    def start(self, level):
+    def apply_level(self, level: int) -> None:
+        if level == 1:
+            self.availible_births = 0
+            self.max_births = 5
+            tpgol.modify_cells(tpgol.RED, [(20, 19), (20, 20), (20, 21),
+                               (21, 21), (19, 20)])
+
+    def start(self, level) -> None:
         """Begin the main game loop."""
         self.gr.draw_grid()
 
@@ -324,12 +337,7 @@ class Game(GUI):
         FREQUENCY = 1000  # How often to update GOL board, in milliseconds
         pygame.time.set_timer(GOLTICK, FREQUENCY)
 
-
-        if level == 1:
-            availible_births = 5
-            tpgol.modify_cells(tpgol.RED, [(20, 19), (20, 20), (20, 21),
-                               (21, 21), (19, 20)])
-            # Use a method for levels so they can have highlights for birth
+        self.apply_level(level)
 
         while True:
             events = pygame.event.get()
@@ -341,15 +349,18 @@ class Game(GUI):
                     if event.key == pygame.K_SPACE:  # Pause game
                         pause = not pause
                 elif event.type == GOLTICK and not pause:  # Update GOL board
-                    availible_births += 1
+                    if self.availible_births < self.max_births:
+                        self.availible_births += 1
                     tpgol.tick()
 
             if self.m1_pressed(mouse_buttons):
-                if availible_births >= 1:
+                if self.availible_births >= 1:
                     mouse_pos = pygame.mouse.get_pos()
                     coordinates = (mouse_pos[0]//20, mouse_pos[1]//20) 
-                    tpgol.modify_cells(2, (coordinates,))
-                    availible_births -= 1  # One free birth per second
+                    if (tpgol.grid[coordinates[0]][coordinates[1]].state ==
+                        tpgol.DEAD):
+                            tpgol.modify_cells(2, (coordinates,))
+                            self.availible_births -= 1
                 m1_ready = False
 
             for x in range(tpgol.columns):
@@ -366,8 +377,9 @@ class Game(GUI):
             clock.tick(60)
             pygame.display.flip()
 
+
 if __name__ == '__main__':
     tpgol = TPGameOfLife(80, 45)
-    gr = Graphics((1600, 900))
+    gr = Graphics((1152, 864))
     m = MainMenu(tpgol, gr)
     m.start()
