@@ -132,8 +132,8 @@ class Graphics:
         screen      A pygame.Surface object representing the computer monitor
         """
         self.screen = pygame.display.set_mode(resolution)
-        self.x_pixels = (resolution[0]//20)*20
-        self.y_pixels = (resolution[1]//20)*20
+        self.x_pixels = resolution[0]
+        self.y_pixels = resolution[1]
 
     def draw_text(self, font: pygame.font.Font, word: str,
                   x_frac: Tuple[int, int], y_frac: Tuple[int, int]) \
@@ -179,19 +179,25 @@ class Graphics:
     def draw_grid(self) -> None:
         """Draw and empty grid onto the screen."""
         self.screen.fill(self.BLACK)
-        for x in range(0, self.x_pixels+1, 20):
+        for x in range(0, self.x_pixels, 20):
             pygame.draw.line(self.screen, self.WHITE, (x, 0),
                              (x, self.y_pixels))
-        for y in range(0, self.y_pixels+1, 20):
+        for y in range(0, self.y_pixels, 20):
             pygame.draw.line(self.screen, self.WHITE, (0, y),
                              (self.x_pixels, y))
 
+    def draw_bar(self) -> None:
+        """Draw status bar onto bottom of screen."""
+        bar_rect = pygame.Rect((1, self.y_pixels-40), (self.x_pixels-2,
+                                39))
+        pygame.draw.rect(self.screen, self.BLACK, bar_rect)
+
     def colour_cell(self, colour: Tuple[int, int, int], \
-            mouse_pos: Tuple[int, int]):
+                    mouse_pos: Tuple[int, int]):
         """Change the colour of a cell on screen."""
         x = mouse_pos[0]//20 * 20
         y = mouse_pos[1]//20 * 20
-        cell_rect = pygame.Rect(x+1, y+1, 19, 19)  # Offset for grid lines
+        cell_rect = pygame.Rect(x+1, y+1, 19, 19)
         pygame.draw.rect(self.screen, colour, cell_rect)
 
 
@@ -330,6 +336,7 @@ class Game(GUI):
     def start(self, level) -> None:
         """Begin the main game loop."""
         self.gr.draw_grid()
+        self.gr.draw_bar()
 
         pause = False  # Pause GOL ticks or not
         clock = pygame.time.Clock()  # Clock for managing framerate
@@ -379,7 +386,7 @@ class Game(GUI):
 
 
 if __name__ == '__main__':
-    tpgol = TPGameOfLife(80, 45)
-    gr = Graphics((1152, 864))
+    tpgol = TPGameOfLife(80, 38)
+    gr = Graphics((1001, 801))
     m = MainMenu(tpgol, gr)
     m.start()
