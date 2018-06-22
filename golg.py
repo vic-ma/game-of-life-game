@@ -135,16 +135,16 @@ class Graphics:
         self.x_pixels = resolution[0]
         self.y_pixels = resolution[1]
 
-    def draw_text(self, font: pygame.font.Font, word: str,
-                  x_frac: Tuple[int, int], y_frac: Tuple[int, int]) \
-                  -> pygame.Rect:
+    def draw_text(self, font: pygame.font.Font, word: str, colour: 
+                  Tuple[int, int], x_frac: Tuple[int, int], 
+                  y_frac: Tuple[int, int]) -> pygame.Rect:
         """Draw text onto the screen and return the corresponding pygame.Rect.
 
         x_frac and y_frac are tuples where the first element is the numerator and
         the second element is the denominator in a fraction that splits the
         screen lengthwise and widthwise, respectively.
         """
-        word_surface = font.render(word, True, self.WHITE)
+        word_surface = font.render(word, True, colour)
         x_coord = (((self.x_pixels/x_frac[1] - font.size(word)[0]) / 2)
                    + ((x_frac[0]-1)/x_frac[1]) * self.x_pixels)
         y_coord = (((self.y_pixels/y_frac[1] - font.size(word)[1]) / 2)
@@ -160,21 +160,24 @@ class Graphics:
         self.screen.fill(self.BLACK)
         title_font = pygame.font.SysFont('Arial', 100)
         button_font = pygame.font.SysFont('Arial', 200)
-        self.draw_text(title_font, 'Game of Life Game', (1, 1), (1, 3))
-        levels_button = self.draw_text(button_font, 'LEVELS', (1, 1), (2, 3))
-        quit_button = self.draw_text(button_font, 'QUIT', (1, 1), (3, 3))
+        self.draw_text(title_font, 'Game of Life Game', self.WHITE, (1, 1), 
+                       (1, 3))
+        levels_button = self.draw_text(button_font, 'LEVELS', self.WHITE,
+                                       (1, 1), (2, 3))
+        quit_button = self.draw_text(button_font, 'QUIT', self.WHITE, (1, 1),
+                                     (3, 3))
         return (levels_button, quit_button)
 
     def draw_level_select(self) -> None:
         """Draw the level select menu."""
         self.screen.fill(self.BLACK)
         level_font = pygame.font.SysFont('Arial', 400)
-        self.draw_text(level_font, '1', (1, 3), (1, 2))
-        self.draw_text(level_font, '2', (2, 3), (1, 2))
-        self.draw_text(level_font, '3', (3, 3), (1, 2))
-        self.draw_text(level_font, '4', (1, 3), (2, 2))
-        self.draw_text(level_font, '5', (2, 3), (2, 2))
-        self.draw_text(level_font, '6', (3, 3), (2, 2))
+        self.draw_text(level_font, '1', self.WHITE, (1, 3), (1, 2))
+        self.draw_text(level_font, '2', self.WHITE, (2, 3), (1, 2))
+        self.draw_text(level_font, '3', self.WHITE, (3, 3), (1, 2))
+        self.draw_text(level_font, '4', self.WHITE, (1, 3), (2, 2))
+        self.draw_text(level_font, '5', self.WHITE, (2, 3), (2, 2))
+        self.draw_text(level_font, '6', self.WHITE, (3, 3), (2, 2))
 
     def draw_grid(self) -> None:
         """Draw and empty grid onto the screen."""
@@ -334,7 +337,7 @@ class Game(GUI):
                 self.tpgol.grid[column][row].state = self.tpgol.DEAD
                 self.tpgol.grid[column][row].next_state = self.tpgol.DEAD
         if level == 1:
-            self.availible_births = 0
+            self.availible_births = 100
             self.max_births = 5
             tpgol.modify_cells(tpgol.RED, [(20, 19), (20, 20), (20, 21),
                                (21, 21), (19, 20)])
@@ -347,6 +350,8 @@ class Game(GUI):
         generation = 0
         status_font = pygame.font.SysFont('Arial', 20)
         back = False
+        red_on_board = False
+        win = False
 
         pause = False  # Pause GOL ticks or not
         clock = pygame.time.Clock()  # Clock for managing framerate
@@ -370,14 +375,15 @@ class Game(GUI):
                     if self.availible_births < self.max_births:
                         self.availible_births += 1
                     tpgol.tick()
-                    generation += 1
+                    if not win:
+                        generation += 1
 
             if self.m1_pressed(mouse_buttons):
                 if self.availible_births >= 1:
                     mouse_pos = pygame.mouse.get_pos()
                     coordinates = (mouse_pos[0]//20, mouse_pos[1]//20) 
                     if (coordinates[0] < len(tpgol.grid) and
-                        coordinates[1] < len(tpgol.grid[0])):
+                        coordinates[1] < len(tpgol.grid[0])) and not win:
                         if (tpgol.grid[coordinates[0]][coordinates[1]].state ==
                             tpgol.DEAD):
                                 tpgol.grid[coordinates[0]]\
@@ -396,18 +402,31 @@ class Game(GUI):
                         colour = gr.BLACK
                     elif state == tpgol.RED:
                         colour = gr.RED
+                        red_on_board = True
                     elif state == tpgol.GREEN:
                         colour = gr.GREEN
                     gr.colour_cell(colour, (x*20, y*20))
 
+            if not red_on_board:
+                win = True
+            else:
+                red_on_board = False
+
             self.gr.draw_bar()
-            self.gr.draw_text(status_font, 'Availible Births: ' +
-                               str(self.availible_births), (2, 3),
+            self.gr.draw_text(status_font, 'Availible Births: '+
+                               str(self.availible_births),
+                               self.gr.WHITE, (2, 3), ((gr.y_pixels-1)//40,
+                               gr.y_pixels//40))
+            self.gr.draw_text(status_font, 'Back', self.gr.WHITE, (1, 3),
                                ((gr.y_pixels-1)//40, gr.y_pixels//40))
-            self.gr.draw_text(status_font, 'Generation: ' + str(generation), (3, 3),
-                               ((gr.y_pixels-1)//40, gr.y_pixels//40))
-            self.gr.draw_text(status_font, 'Back', (1, 3),
-                               ((gr.y_pixels-1)//40, gr.y_pixels//40))
+            if win:
+                self.gr.draw_text(status_font, 'Generation: ' +
+                                  str(generation), self.gr.GREEN, (3, 3),
+                                  ((gr.y_pixels-1)//40, gr.y_pixels//40))
+            else:
+                self.gr.draw_text(status_font, 'Generation: ' +
+                                  str(generation), self.gr.WHITE, (3, 3),
+                                  ((gr.y_pixels-1)//40, gr.y_pixels//40))
 
             clock.tick(60)
             pygame.display.flip()
