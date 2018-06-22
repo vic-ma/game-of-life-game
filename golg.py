@@ -41,7 +41,7 @@ class TPGameOfLife:
         self.rows = rows
 
     def modify_cells(self, state: int, coordinates: List[Tuple[int]]) -> None:
-        """Set state of Cells on grid."""
+        """Set state of multiple Cells on grid."""
         for coord in coordinates:
             self.grid[coord[0]][coord[1]].state = state
             
@@ -161,9 +161,9 @@ class Graphics:
         title_font = pygame.font.SysFont('Arial', 100)
         button_font = pygame.font.SysFont('Arial', 200)
         self.draw_text(title_font, 'Game of Life Game', (1, 1), (1, 3))
-        b1 = self.draw_text(button_font, 'LEVELS', (1, 1), (2, 3))
-        b2 = self.draw_text(button_font, 'QUIT', (1, 1), (3, 3))
-        return (b1, b2)
+        levels_button = self.draw_text(button_font, 'LEVELS', (1, 1), (2, 3))
+        quit_button = self.draw_text(button_font, 'QUIT', (1, 1), (3, 3))
+        return (levels_button, quit_button)
 
     def draw_level_select(self) -> None:
         """Draw the level select menu."""
@@ -276,45 +276,47 @@ class LevelSelect(GUI):
 
     def start(self):
         """Begin the level select menu loop."""
-        level = None  # Level selected by user
-
-        self.gr.draw_level_select()
-        pygame.display.flip()
-        pygame.display.flip()  # This is not a typo
-
         while True:
-            events = pygame.event.get()
-            mouse_buttons = pygame.mouse.get_pressed()
+            level = None  # Level selected by user
 
-            for event in events:
-                self.check_quit(event)
+            self.gr.draw_level_select()
+            pygame.display.flip()
+            pygame.display.flip()  # This is not a typo
 
-            if self.m1_pressed(mouse_buttons):
-                mouse_pos = pygame.mouse.get_pos()
-                x, y = mouse_pos[0], mouse_pos[1]
-                x_pixels = pygame.display.Info().current_w
-                y_pixels = pygame.display.Info().current_h
-                if x in range(0, x_pixels//3) and y in range(0, y_pixels//2):
-                    level = 1
-                elif (x in range(x_pixels//3, 2*x_pixels//3)
-                      and y in range(0, y_pixels//2)):
-                    level = 2
-                elif (x in range(2*x_pixels//3, x_pixels)
-                      and y in range(0, y_pixels//2)):
-                    level = 3
-                elif (x in range(0, x_pixels//3)
-                      and y in range(y_pixels//2, y_pixels)):
-                    level = 4
-                elif (x in range(x_pixels//3, 2*x_pixels//3)
-                      and y in range(y_pixels//2, y_pixels)):
-                    level = 5
-                elif (x in range(2*x_pixels//3, x_pixels)
-                      and y in range(y_pixels//2, y_pixels)):
-                    level = 6
+            while True:
+                events = pygame.event.get()
+                mouse_buttons = pygame.mouse.get_pressed()
 
-            if level:
-                g = Game(tpgol, gr)
-                g.start(level)
+                for event in events:
+                    self.check_quit(event)
+
+                if self.m1_pressed(mouse_buttons):
+                    mouse_pos = pygame.mouse.get_pos()
+                    x, y = mouse_pos[0], mouse_pos[1]
+                    x_pixels = pygame.display.Info().current_w
+                    y_pixels = pygame.display.Info().current_h
+                    if x in range(0, x_pixels//3) and y in range(0, y_pixels//2):
+                        level = 1
+                    elif (x in range(x_pixels//3, 2*x_pixels//3)
+                          and y in range(0, y_pixels//2)):
+                        level = 2
+                    elif (x in range(2*x_pixels//3, x_pixels)
+                          and y in range(0, y_pixels//2)):
+                        level = 3
+                    elif (x in range(0, x_pixels//3)
+                          and y in range(y_pixels//2, y_pixels)):
+                        level = 4
+                    elif (x in range(x_pixels//3, 2*x_pixels//3)
+                          and y in range(y_pixels//2, y_pixels)):
+                        level = 5
+                    elif (x in range(2*x_pixels//3, x_pixels)
+                          and y in range(y_pixels//2, y_pixels)):
+                        level = 6
+
+                if level:
+                    g = Game(tpgol, gr)
+                    g.start(level)
+                    break
 
 
 class Game(GUI):
@@ -327,6 +329,10 @@ class Game(GUI):
         self.gr = gr
 
     def apply_level(self, level: int) -> None:
+        for column in range(self.tpgol.columns):
+            for row in range(self.tpgol.rows):
+                self.tpgol.grid[column][row].state = self.tpgol.DEAD
+                self.tpgol.grid[column][row].next_state = self.tpgol.DEAD
         if level == 1:
             self.availible_births = 0
             self.max_births = 5
@@ -338,10 +344,15 @@ class Game(GUI):
         self.gr.draw_grid()
         self.gr.draw_bar()
 
+        generation = 0
+        status_font = pygame.font.SysFont('Arial', 20)
+        back = False
+
         pause = False  # Pause GOL ticks or not
         clock = pygame.time.Clock()  # Clock for managing framerate
         GOLTICK = pygame.USEREVENT  # Event indicating to update GOL board
         FREQUENCY = 1000  # How often to update GOL board, in milliseconds
+
         pygame.time.set_timer(GOLTICK, FREQUENCY)
 
         self.apply_level(level)
@@ -359,16 +370,24 @@ class Game(GUI):
                     if self.availible_births < self.max_births:
                         self.availible_births += 1
                     tpgol.tick()
+                    generation += 1
 
             if self.m1_pressed(mouse_buttons):
                 if self.availible_births >= 1:
                     mouse_pos = pygame.mouse.get_pos()
                     coordinates = (mouse_pos[0]//20, mouse_pos[1]//20) 
-                    if (tpgol.grid[coordinates[0]][coordinates[1]].state ==
-                        tpgol.DEAD):
-                            tpgol.modify_cells(2, (coordinates,))
-                            self.availible_births -= 1
+                    if (coordinates[0] < len(tpgol.grid) and
+                        coordinates[1] < len(tpgol.grid[0])):
+                        if (tpgol.grid[coordinates[0]][coordinates[1]].state ==
+                            tpgol.DEAD):
+                                tpgol.grid[coordinates[0]]\
+                                          [coordinates[1]].state = tpgol.GREEN
+                                self.availible_births -= 1
+                    elif (mouse_pos[0] in range(0, gr.x_pixels//3) and
+                          mouse_pos[1] in range(gr.y_pixels-40, gr.y_pixels)):
+                        break
                 m1_ready = False
+
 
             for x in range(tpgol.columns):
                 for y in range(tpgol.rows):
@@ -380,6 +399,15 @@ class Game(GUI):
                     elif state == tpgol.GREEN:
                         colour = gr.GREEN
                     gr.colour_cell(colour, (x*20, y*20))
+
+            self.gr.draw_bar()
+            self.gr.draw_text(status_font, 'Availible Births: ' +
+                               str(self.availible_births), (2, 3),
+                               ((gr.y_pixels-1)//40, gr.y_pixels//40))
+            self.gr.draw_text(status_font, 'Generation: ' + str(generation), (3, 3),
+                               ((gr.y_pixels-1)//40, gr.y_pixels//40))
+            self.gr.draw_text(status_font, 'Back', (1, 3),
+                               ((gr.y_pixels-1)//40, gr.y_pixels//40))
 
             clock.tick(60)
             pygame.display.flip()
