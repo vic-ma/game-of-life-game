@@ -342,17 +342,18 @@ class Game(GUI):
             for row in range(self.tpgol.rows):
                 self.tpgol.grid[column][row].state = self.tpgol.DEAD
                 self.tpgol.grid[column][row].next_state = self.tpgol.DEAD
-        if level == 1:
+
+        if level == 1:  # Glider
             self.availible_births = 8
             self.max_births = 8
             tpgol.modify_cells(tpgol.RED, [(1, 0), (2, 1), (0, 2), (1, 2),
                                (2, 2)])
-        elif level == 2:
+        elif level == 2:  # R-pentomino
             self.availible_births = 0
             self.max_births = 5
             tpgol.modify_cells(tpgol.RED, [(cx, cy), (cx, cy-1), (cx+1, cy-1),
                                (cx-1, cy), (cx, cy+1)])
-        elif level == 3:
+        elif level == 3:  # Pulsar
             self.availible_births = 3
             self.max_births = 3
             tpgol.modify_cells(tpgol.RED, [(cx-2, cy-2), (cx-2, cy-1),
@@ -360,7 +361,7 @@ class Game(GUI):
                                (cx+2, cy-2), (cx+2, cy-1), (cx+2, cy),
                                (cx+2, cy+1), (cx+2, cy+2), (cx, cy+2),
                                (cx, cy-2)])
-        elif level == 4:
+        elif level == 4:  # Thunderbird
             self.availible_births = 3
             self.max_births = 2
             x1 = self.tpgol.columns // 4
@@ -369,7 +370,7 @@ class Game(GUI):
                                (x1+1, cy-3), (x1, cy-1), (x1, cy), (x1, cy+1),
                                (x2-1, cy-3), (x2, cy-3), (x2+1, cy-3),
                                (x2, cy-1), (x2, cy), (x2, cy+1)])
-        elif level == 5:
+        elif level == 5:  # Pentadecathlon
             self.availible_births = 3
             self.max_births = 2
             tpgol.modify_cells(tpgol.RED, [(cx-5, 5), (cx-4, 5), (cx-3, 5),
@@ -384,7 +385,7 @@ class Game(GUI):
                                (mx-6, cy-3), (mx-6, cy-2), (mx-6, cy-1),
                                (mx-6, cy), (mx-6, cy+1), (mx-6, cy+2),
                                (mx-6, cy+3), (mx-6, cy+4)])
-        elif level == 6:
+        elif level == 6:  # Pi-heptomino
             self.availible_births = 3
             self.max_births = 2
             tpgol.modify_cells(tpgol.RED, [(4, cy-1), (5, cy-1), (6, cy-1),
@@ -436,7 +437,7 @@ class Game(GUI):
             if self.m1_pressed(mouse_buttons):
                 mouse_pos = pygame.mouse.get_pos()
                 coordinates = (mouse_pos[0]//20, mouse_pos[1]//20)
-                if (self.availible_births >= 1 and
+                if (self.availible_births >= 1 and 
                    (coordinates[0] < len(tpgol.grid) and
                     coordinates[1] < len(tpgol.grid[0])) and not win):
                     if (tpgol.grid[coordinates[0]][coordinates[1]].state ==
@@ -444,12 +445,14 @@ class Game(GUI):
                             tpgol.grid[coordinates[0]]\
                                       [coordinates[1]].state = tpgol.GREEN
                             self.availible_births -= 1
+                # Back button
                 elif (mouse_pos[0] in range(0, gr.x_pixels//3) and
                       mouse_pos[1] in range(gr.y_pixels-40, gr.y_pixels)):
                     break
                 m1_ready = False
 
 
+            # Update colours of all cells
             for x in range(tpgol.columns):
                 for y in range(tpgol.rows):
                     state = tpgol.grid[x][y].state
