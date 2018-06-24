@@ -354,7 +354,19 @@ class Game(GUI):
                                (cx-1, cy), (cx, cy+1)])
         elif level == 3:
             self.availible_births = 0
-            self.max_births = 10
+            self.max_births = 0
+            tpgol.modify_cells(tpgol.RED, [])
+        elif level == 4:
+            self.availible_births = 3
+            self.max_births = 2
+            tpgol.modify_cells(tpgol.RED, [(cx-2, cy-2), (cx-2, cy-1),
+                               (cx-2, cy), (cx-2, cy+1), (cx-2, cy+2),
+                               (cx+2, cy-2), (cx+2, cy-1), (cx+2, cy),
+                               (cx+2, cy+1), (cx+2, cy+2), (cx, cy+2),
+                               (cx, cy-2)])
+        elif level == 5:
+            self.availible_births = 3
+            self.max_births = 2
             tpgol.modify_cells(tpgol.RED, [(cx-5, 5), (cx-4, 5), (cx-3, 5),
                                (cx-2, 5), (cx-1, 5), (cx, 5), (cx+1, 5),
                                (cx+2, 5), (cx+3, 5), (cx+4, 5), (cx-5, my-6),
@@ -367,18 +379,18 @@ class Game(GUI):
                                (mx-6, cy-3), (mx-6, cy-2), (mx-6, cy-1),
                                (mx-6, cy), (mx-6, cy+1), (mx-6, cy+2),
                                (mx-6, cy+3), (mx-6, cy+4)])
-        elif level == 4:
-            self.availible_births = 0
-            self.max_births = 0
-            tpgol.modify_cells(tpgol.RED, [])
-        elif level == 5:
-            self.availible_births = 0
-            self.max_births = 0
-            tpgol.modify_cells(tpgol.RED, [])
         elif level == 6:
-            self.availible_births = 0
-            self.max_births = 0
-            tpgol.modify_cells(tpgol.RED, [])
+            self.availible_births = 3
+            self.max_births = 2
+            tpgol.modify_cells(tpgol.RED, [(4, cy-1), (5, cy-1), (6, cy-1),
+                               (6, cy), (4, cy+1), (5, cy+1), (6, cy+1),
+                               (mx-7, cy-1), (mx-6, cy-1), (mx-5, cy-1),
+                               (mx-7, cy), (mx-7, cy+1), (mx-6, cy+1),
+                               (mx-5, cy+1), (cx-1, 6), (cx, 6), (cx+1, 6),
+                               (cx-1, 5), (cx+1, 5), (cx-1, 4), (cx+1, 4),
+                               (cx-1, my-7), (cx, my-7), (cx+1, my-7),
+                               (cx-1, my-6), (cx+1, my-6), (cx-1, my-5),
+                               (cx+1, my-5)])
 
     def start(self, level) -> None:
         """Begin the main game loop."""
@@ -394,7 +406,7 @@ class Game(GUI):
         pause = False  # Pause GOL ticks or not
         clock = pygame.time.Clock()  # Clock for managing framerate
         GOLTICK = pygame.USEREVENT  # Event indicating to update GOL board
-        FREQUENCY = 1000  # How often to update GOL board, in milliseconds
+        FREQUENCY = 100  # How often to update GOL board, in milliseconds
 
         pygame.time.set_timer(GOLTICK, FREQUENCY)
 
@@ -417,19 +429,19 @@ class Game(GUI):
                         generation += 1
 
             if self.m1_pressed(mouse_buttons):
-                if self.availible_births >= 1:
-                    mouse_pos = pygame.mouse.get_pos()
-                    coordinates = (mouse_pos[0]//20, mouse_pos[1]//20) 
-                    if (coordinates[0] < len(tpgol.grid) and
-                        coordinates[1] < len(tpgol.grid[0])) and not win:
-                        if (tpgol.grid[coordinates[0]][coordinates[1]].state ==
-                            tpgol.DEAD):
-                                tpgol.grid[coordinates[0]]\
-                                          [coordinates[1]].state = tpgol.GREEN
-                                self.availible_births -= 1
-                    elif (mouse_pos[0] in range(0, gr.x_pixels//3) and
-                          mouse_pos[1] in range(gr.y_pixels-40, gr.y_pixels)):
-                        break
+                mouse_pos = pygame.mouse.get_pos()
+                coordinates = (mouse_pos[0]//20, mouse_pos[1]//20)
+                if (self.availible_births >= 1 and
+                   (coordinates[0] < len(tpgol.grid) and
+                    coordinates[1] < len(tpgol.grid[0])) and not win):
+                    if (tpgol.grid[coordinates[0]][coordinates[1]].state ==
+                        tpgol.DEAD):
+                            tpgol.grid[coordinates[0]]\
+                                      [coordinates[1]].state = tpgol.GREEN
+                            self.availible_births -= 1
+                elif (mouse_pos[0] in range(0, gr.x_pixels//3) and
+                      mouse_pos[1] in range(gr.y_pixels-40, gr.y_pixels)):
+                    break
                 m1_ready = False
 
 
@@ -471,7 +483,7 @@ class Game(GUI):
 
 
 if __name__ == '__main__':
-    tpgol = TPGameOfLife(50, 38)
-    gr = Graphics((1001, 801))
+    tpgol = TPGameOfLife(51, 39)
+    gr = Graphics((1021, 821))
     m = MainMenu(tpgol, gr)
     m.start()
