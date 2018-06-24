@@ -363,7 +363,7 @@ class Game(GUI):
                                (cx, cy-2)])
         elif level == 4:  # Thunderbird
             self.availible_births = 3
-            self.max_births = 2
+            self.max_births = 3
             x1 = self.tpgol.columns // 4
             x2 = 3 * self.tpgol.columns // 4
             tpgol.modify_cells(tpgol.RED, [(x1-1, cy-3), (x1, cy-3),
@@ -371,8 +371,8 @@ class Game(GUI):
                                (x2-1, cy-3), (x2, cy-3), (x2+1, cy-3),
                                (x2, cy-1), (x2, cy), (x2, cy+1)])
         elif level == 5:  # Pentadecathlon
-            self.availible_births = 3
-            self.max_births = 2
+            self.availible_births = 5
+            self.max_births = 5
             tpgol.modify_cells(tpgol.RED, [(cx-5, 5), (cx-4, 5), (cx-3, 5),
                                (cx-2, 5), (cx-1, 5), (cx, 5), (cx+1, 5),
                                (cx+2, 5), (cx+3, 5), (cx+4, 5), (cx-5, my-6),
