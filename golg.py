@@ -353,17 +353,22 @@ class Game(GUI):
             tpgol.modify_cells(tpgol.RED, [(cx, cy), (cx, cy-1), (cx+1, cy-1),
                                (cx-1, cy), (cx, cy+1)])
         elif level == 3:
-            self.availible_births = 0
-            self.max_births = 0
-            tpgol.modify_cells(tpgol.RED, [])
-        elif level == 4:
             self.availible_births = 3
-            self.max_births = 2
+            self.max_births = 3
             tpgol.modify_cells(tpgol.RED, [(cx-2, cy-2), (cx-2, cy-1),
                                (cx-2, cy), (cx-2, cy+1), (cx-2, cy+2),
                                (cx+2, cy-2), (cx+2, cy-1), (cx+2, cy),
                                (cx+2, cy+1), (cx+2, cy+2), (cx, cy+2),
                                (cx, cy-2)])
+        elif level == 4:
+            self.availible_births = 3
+            self.max_births = 2
+            x1 = self.tpgol.columns // 4
+            x2 = 3 * self.tpgol.columns // 4
+            tpgol.modify_cells(tpgol.RED, [(x1-1, cy-3), (x1, cy-3),
+                               (x1+1, cy-3), (x1, cy-1), (x1, cy), (x1, cy+1),
+                               (x2-1, cy-3), (x2, cy-3), (x2+1, cy-3),
+                               (x2, cy-1), (x2, cy), (x2, cy+1)])
         elif level == 5:
             self.availible_births = 3
             self.max_births = 2
@@ -406,7 +411,7 @@ class Game(GUI):
         pause = False  # Pause GOL ticks or not
         clock = pygame.time.Clock()  # Clock for managing framerate
         GOLTICK = pygame.USEREVENT  # Event indicating to update GOL board
-        FREQUENCY = 100  # How often to update GOL board, in milliseconds
+        FREQUENCY = 1000  # How often to update GOL board, in milliseconds
 
         pygame.time.set_timer(GOLTICK, FREQUENCY)
 
