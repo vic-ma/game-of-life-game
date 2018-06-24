@@ -46,7 +46,7 @@ class TPGameOfLife:
             self.grid[coord[0]][coord[1]].state = state
             
     def tick(self) -> None:
-        """Let all Cells on grid know what their next move is."""
+        """Move forward one generation."""
         for x in range(self.columns):
             for y in range(self.rows):  # Loop over every Cell
                 cell = self.grid[x][y]
@@ -98,7 +98,7 @@ class TPGameOfLife:
                 self.grid[x][y].state = self.grid[x][y].next_state
 
     def print(self) -> None:
-        """Print grid in ASCII"""
+        """Print grid in ASCII."""
         for y in reversed(range(self.rows)):
             for x in range(self.columns):
                 if self.grid[x][y].state == self.RED:
@@ -110,10 +110,10 @@ class TPGameOfLife:
             print()
 
     def start(self) -> None:
-        """Start running the Game of Life via display()"""
+        """Start running the Game of Life via print method."""
         while True:
             print()
-            self.display()
+            self.print()
             self.tick()
             time.sleep(0.5)
 
@@ -332,15 +332,24 @@ class Game(GUI):
         self.gr = gr
 
     def apply_level(self, level: int) -> None:
+        # X and Y values of centre or pseudo-center cell
+        cx = self.tpgol.columns // 2
+        cy = self.tpgol.rows // 2
         for column in range(self.tpgol.columns):
             for row in range(self.tpgol.rows):
                 self.tpgol.grid[column][row].state = self.tpgol.DEAD
                 self.tpgol.grid[column][row].next_state = self.tpgol.DEAD
         if level == 1:
-            self.availible_births = 100
+            self.availible_births = 8
+            self.max_births = 8
+            tpgol.modify_cells(tpgol.RED, [(1, 0), (2, 1), (0, 2), (1, 2),
+                               (2, 2)])
+
+        elif level == 2:
+            self.availible_births = 0
             self.max_births = 5
-            tpgol.modify_cells(tpgol.RED, [(20, 19), (20, 20), (20, 21),
-                               (21, 21), (19, 20)])
+            tpgol.modify_cells(tpgol.RED, [(cx, cy), (cx, cy-1), (cx+1, cy-1),
+                               (cx-1, cy), (cx, cy+1)])
 
     def start(self, level) -> None:
         """Begin the main game loop."""
@@ -433,7 +442,7 @@ class Game(GUI):
 
 
 if __name__ == '__main__':
-    tpgol = TPGameOfLife(80, 38)
+    tpgol = TPGameOfLife(50, 38)
     gr = Graphics((1001, 801))
     m = MainMenu(tpgol, gr)
     m.start()
