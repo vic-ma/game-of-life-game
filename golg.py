@@ -335,6 +335,9 @@ class Game(GUI):
         # X and Y values of centre or pseudo-center cell
         cx = self.tpgol.columns // 2
         cy = self.tpgol.rows // 2
+        # Max X and Y values
+        mx = self.tpgol.columns
+        my = self.tpgol.rows
         for column in range(self.tpgol.columns):
             for row in range(self.tpgol.rows):
                 self.tpgol.grid[column][row].state = self.tpgol.DEAD
@@ -344,12 +347,38 @@ class Game(GUI):
             self.max_births = 8
             tpgol.modify_cells(tpgol.RED, [(1, 0), (2, 1), (0, 2), (1, 2),
                                (2, 2)])
-
         elif level == 2:
             self.availible_births = 0
             self.max_births = 5
             tpgol.modify_cells(tpgol.RED, [(cx, cy), (cx, cy-1), (cx+1, cy-1),
                                (cx-1, cy), (cx, cy+1)])
+        elif level == 3:
+            self.availible_births = 0
+            self.max_births = 10
+            tpgol.modify_cells(tpgol.RED, [(cx-5, 5), (cx-4, 5), (cx-3, 5),
+                               (cx-2, 5), (cx-1, 5), (cx, 5), (cx+1, 5),
+                               (cx+2, 5), (cx+3, 5), (cx+4, 5), (cx-5, my-6),
+                               (cx-4, my-6), (cx-3, my-6), (cx-2, my-6),
+                               (cx-1, my-6), (cx, my-6), (cx+1, my-6),
+                               (cx+2, my-6), (cx+3, my-6), (cx+4, my-6),
+                               (5, cy-5), (5, cy-4), (5, cy-3), (5, cy-2),
+                               (5, cy-1), (5, cy), (5, cy+1), (5, cy+2),
+                               (5, cy+3), (5, cy+4), (mx-6, cy-5), (mx-6,cy-4),
+                               (mx-6, cy-3), (mx-6, cy-2), (mx-6, cy-1),
+                               (mx-6, cy), (mx-6, cy+1), (mx-6, cy+2),
+                               (mx-6, cy+3), (mx-6, cy+4)])
+        elif level == 4:
+            self.availible_births = 0
+            self.max_births = 0
+            tpgol.modify_cells(tpgol.RED, [])
+        elif level == 5:
+            self.availible_births = 0
+            self.max_births = 0
+            tpgol.modify_cells(tpgol.RED, [])
+        elif level == 6:
+            self.availible_births = 0
+            self.max_births = 0
+            tpgol.modify_cells(tpgol.RED, [])
 
     def start(self, level) -> None:
         """Begin the main game loop."""
