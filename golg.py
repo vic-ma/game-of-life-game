@@ -73,7 +73,7 @@ class TPGameOfLife:
                             cell.next_state = self.GREEN
                     elif red_neighbours == 3 and green_neighbours != 3:
                         cell.next_state = self.RED
-                    elif green_neighbours == 3 and red_neighbours !=3:
+                    elif green_neighbours == 3 and red_neighbours != 3:
                         cell.next_state = self.GREEN
                 elif cell.state == self.RED:  # Red survival/death
                     if 2 <= red_neighbours - green_neighbours <= 3:
