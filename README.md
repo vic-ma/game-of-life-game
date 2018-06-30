@@ -1,8 +1,9 @@
 # Game of Life Game
-The player controls the green cells and is given the opportunity to birth new green cells each turn (one birth is granted each second, limited by a max number of stored births) in an attempt to exterminate all red cells in as few turns as possible.
+The player controls the green cells and is given the opportunity to birth new green cells each turn (one birth is granted each second, limited by a maximum number of stored births) in an attempt to exterminate all red cells in as few turns as possible.
 
 ## Install
 Pythton 3.6+
+
 Pygame module required.
 
 ## Controls
