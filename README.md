@@ -27,6 +27,15 @@ An improvement on these TBS-like games is the RTS-like [lifecompetes](http://lif
 
 The solution is to not make Life multiplayer at all, but instead, a singleplayer game, where the player fights against preset foes, à la [Creeper World](https://store.steampowered.com/app/280220/Creeper_World_3_Arc_Eternal/). The restriction placed on birth refill rate that is necessary in lifecompetes to avoid eternal stalemate is not neccesary in a singleplayer game of Life, where the player is expected to win, with the challenge being to do so as quickly as possible. Furthermore, the overemphasis on strategy seen in the TBS-like versions of multiplayer Life is discouraged in Game of Life Game, because there is no need to be so precise, when the enemy is not being so precise, and when a constant supply of births is given.
 
+## Starting and Maximum Births
+Two factors that impact the gameplay of each level are the starting number of births, and the maximum number of births.
+
+A high starting number allows the player to attack immediately, while a low starting number forces the player to wait a few turns—useful to prevent quick victories in levels where the enemy pattern takes a bit of time to grow. 
+
+A high number of maximum births allows for saving up births and launching a direct attack on enemy cells, while a low number of maximum births forces the player to play conservatively, and slowly build up their forces before striking.
+
+A low starting number and a maximum births number that is less than `3` can be used to force the player to play carefully, as it would be very difficult for the player to win if all their cells die after the initial births are used (since at least `3` cells are needed to sustain life).
+
 ## Rules
 A new set of rules must be introduced to allow for interactions between red and green cells. The rules used in Game of Life Game are those of p2life, as detailed in "A Two-Player Game of Life," by Mark Levene and George Roussos.
 
@@ -44,17 +53,7 @@ A new set of rules must be introduced to allow for interactions between red and 
 >2) If the difference between the number of white and black neighbours is one and the
 number of white neighbours is at least two, then the white token survives.
 
-
 Levene M., & Roussos G. (2003). A two-player game of life. *International Journal of Modern Physics C, 14*(2), 195-201. https://doi.org/10.1142/S0129183103004346
-
-## Starting and Maximum Births
-Two factors that impact the gameplay of each level are the starting number of births, and the maximum number of births.
-
-A high starting number allows the player to attack immediately, while a low starting number forces the player to wait a few turns—useful to prevent quick victories in levels where the enemy pattern takes a bit of time to grow. 
-
-A high number of maximum births allows for saving up births and launching a direct attack on enemy cells, while a low number of maximum births forces the player to play conservatively, and slowly build up their forces before striking.
-
-A low starting number and a maximum births number that is less than `3` can be used to force the player to play slowly and carefully, as it will be very difficult for the player to win if their cells die after the initial births are used (since at least `3` cells are needed to sustain life).
 
 ## TODO
 * Change the way levels are added into the game; multiple lines of tuples are terrible
