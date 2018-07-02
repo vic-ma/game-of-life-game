@@ -362,8 +362,8 @@ class Game(GUI):
                                (cx+2, cy+1), (cx+2, cy+2), (cx, cy+2),
                                (cx, cy-2)])
         elif level == 4:  # Thunderbird
-            self.starting_births = 3
-            self.max_births = 3
+            self.starting_births = 0
+            self.max_births = 5
             x1 = self.tpgol.columns // 4
             x2 = 3 * self.tpgol.columns // 4
             tpgol.modify_cells(tpgol.RED, [(x1-1, cy-3), (x1, cy-3),
