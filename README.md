@@ -22,8 +22,7 @@ Attempts have therefore been made to make the Game of Life a proper game. These 
 
 An improvement on these TBS-like games is the RTS-like [lifecompetes](http://lifecompetes.com/). The fact that the game ticks every few seconds means players can't spend too long crafting too percise a move, and this alone makes it much more enjoyable to play. However, the multiple turns it takes to gain one birth means gameplay is often more passive than active. This is unfortunate, as the most fun in this game is had when attacking another player, either by birthing cells near their cells or by leading an existing mass cells towards a mass of their cells and making contact—neither of which is possible when resources are so limited.
 
-The solution is to not make Life multiplayer at all, but instead, a singleplayer game, where the player fights against preset foes, à la [Creeper World](https://store.steampowered.com/app/280220/Creeper_World_3_Arc_Eternal/).  The restriction placed on birth refill rate that was necessary in lifecompetes to ensure that players could actually lose their cells and not just grow them endlessly, is not neccesary in a singleplayer game of Life, because the player is expected to win, and the challenge is to do so as quickly as possible. Furthermore, the player's power can always be balanced by the level's difficulty. It is in this way that Game of Life Game takes the fun parts of lifecompetes, and in essence, any Game of Life game—the growing of cells and attacking—but leaves out the negatives: the waiting.
-
+The solution is to not make Life multiplayer at all, but instead, a singleplayer game, where the player fights against preset foes, à la [Creeper World](https://store.steampowered.com/app/280220/Creeper_World_3_Arc_Eternal/). The restriction placed on birth refill rate that is necessary in lifecompetes to avoid eternal stalemate is not neccesary in a singleplayer game of Life, where the player is expected to win, with the challenge being to do so as quickly as possible. Furthermore, the overemphasis on strategy seen in the TBS-like versions of multiplayer Life is discouraged in Game of Life Game, because there is no need to be so precise, when the enemy is not being so percise, and when a constant supply of births is given.
 
 ## Rules
 A new set of rules must be introduced to allow for interactions between red and green cells. The rules used in Game of Life Game are those of p2life, as detailed in "A Two-Player Game of Life," by Mark Levene and George Roussos.
@@ -45,11 +44,15 @@ number of white neighbours is at least two, then the white token survives.
 
 Levene M., & Roussos G. (2003). A two-player game of life. *International Journal of Modern Physics C, 14*(2), 195-201. https://doi.org/10.1142/S0129183103004346
 
-## Levels
-Each level features some 
+## Gameplay
+Two factors that impact the gameplay of each level are the starting number of births, and the maximum number of births.
+
+A high starting number allows the player to attack immediately, while a low starting number forces the player to wait a few turns—useful to prevent quick victories in levels where the pattern takes a bit of time to grow. 
+
+A high number of maximum births allows for saving up births and launching a direct attack on enemy cells, while a low number of maximum births forces the player to play conservatively, and build up their forces slowly—a starting number of `2` can be used to force this, as it will be almost impossible for the player to win if let their starting births die in a direct attack, instead of building them up.
 
 ## TODO
-* Change the way modify_cells gets its input; multiple lines of tuples are terrible
+* Change the way levels are added into the game; multiple lines of tuples are terrible
 * Add a mode to create levels, via placing red cells on the screen and recording their locations
 * Create more levels
 * Add minigun option, which sets starting births to a very high number and lets player hold down `M1` for rapid placement of cells
