@@ -371,7 +371,7 @@ class Game(GUI):
                                (x2-1, cy-3), (x2, cy-3), (x2+1, cy-3),
                                (x2, cy-1), (x2, cy), (x2, cy+1)])
         elif level == 5:  # Pentadecathlon
-            self.starting_births = 5
+            self.starting_births = 10
             self.max_births = 3
             tpgol.modify_cells(tpgol.RED, [(cx-5, 5), (cx-4, 5), (cx-3, 5),
                                (cx-2, 5), (cx-1, 5), (cx, 5), (cx+1, 5),
