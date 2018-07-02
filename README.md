@@ -1,4 +1,4 @@
-<img src="https://i.imgur.com/UhNsG4I.gif" alt="alt text" width="826" height="826">
+![](https://i.imgur.com/UhNsG4I.gif)
 
 
 # Game of Life Game
