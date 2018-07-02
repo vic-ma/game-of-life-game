@@ -55,7 +55,7 @@ class TPGameOfLife:
 
                 for n_x in range(x-1, x+2):
                     for n_y in range(y-1, y+2):  # Loop over all neighbours
-                        if (not(n_x == x and n_y == y) and 
+                        if (not(n_x == x and n_y == y) and
                             0 <= n_x < self.columns and
                             0 <= n_y < self.rows):
                                 # If neighbour is not the Cell itself and
@@ -135,22 +135,37 @@ class Graphics:
         self.x_pixels = resolution[0]
         self.y_pixels = resolution[1]
 
-    def draw_text(self, font: pygame.font.Font, word: str, colour: 
-                  Tuple[int, int], x_frac: Tuple[int, int], 
-                  y_frac: Tuple[int, int]) -> pygame.Rect:
+    def draw_text(self, font: pygame.font.Font, word: str, colour:
+                  Tuple[int, int], x_frac: Tuple[int, int],
+                  y_frac: Tuple[int, int], sub_x_pixels: int = None,
+                  sub_y_pixels: int = None,
+                  sub_coordinates: Tuple[int, int] = [0, 0]) -> pygame.Rect:
         """Draw text onto the screen and return the corresponding pygame.Rect.
 
         x_frac and y_frac are tuples where the first element is the numerator and
         the second element is the denominator in a fraction that splits the
         screen lengthwise and widthwise, respectively.
+
+        Normally, the entire screen is used for partitioning. However, the
+        coordinates and resolution for a subwindow can be given to be used
+        instead.
         """
+        if sub_x_pixels and sub_y_pixels:
+            x_pixels = sub_x_pixels
+            y_pixels = sub_y_pixels
+        else:
+            x_pixels = self.x_pixels
+            y_pixels = self.y_pixels
+
         word_surface = font.render(word, True, colour)
-        x_coord = (((self.x_pixels/x_frac[1] - font.size(word)[0]) / 2)
-                   + ((x_frac[0]-1)/x_frac[1]) * self.x_pixels)
-        y_coord = (((self.y_pixels/y_frac[1] - font.size(word)[1]) / 2)
-                   + ((y_frac[0]-1)/y_frac[1]) * self.y_pixels)
-        self.screen.blit(word_surface, (x_coord, y_coord))
-        return pygame.Rect((x_coord, y_coord), (font.size(word)[0],
+        x_coord = (((x_pixels/x_frac[1] - font.size(word)[0]) / 2)
+                   + ((x_frac[0]-1)/x_frac[1]) * x_pixels)
+        y_coord = (((y_pixels/y_frac[1] - font.size(word)[1]) / 2)
+                   + ((y_frac[0]-1)/y_frac[1]) * y_pixels)
+        self.screen.blit(word_surface, (x_coord+sub_coordinates[0],
+                            y_coord+sub_coordinates[1]))
+        return pygame.Rect((x_coord+sub_coordinates[0],
+                            y_coord+sub_coordinates[1]), (font.size(word)[0],
                             font.size(word)[1]))
 
     def draw_main_menu(self) -> List[pygame.Rect]:
@@ -160,7 +175,7 @@ class Graphics:
         self.screen.fill(self.BLACK)
         title_font = pygame.font.SysFont('Arial', 100)
         button_font = pygame.font.SysFont('Arial', 200)
-        self.draw_text(title_font, 'Game of Life Game', self.WHITE, (1, 1), 
+        self.draw_text(title_font, 'Game of Life Game', self.WHITE, (1, 1),
                        (1, 3))
         levels_button = self.draw_text(button_font, 'LEVELS', self.WHITE,
                                        (1, 1), (2, 3))
@@ -437,7 +452,7 @@ class Game(GUI):
             if self.m1_pressed(mouse_buttons):
                 mouse_pos = pygame.mouse.get_pos()
                 coordinates = (mouse_pos[0]//20, mouse_pos[1]//20)
-                if (self.starting_births >= 1 and 
+                if (self.starting_births >= 1 and
                    (coordinates[0] < len(tpgol.grid) and
                     coordinates[1] < len(tpgol.grid[0])) and not win):
                     if (tpgol.grid[coordinates[0]][coordinates[1]].state ==
@@ -471,20 +486,23 @@ class Game(GUI):
                 red_on_board = False
 
             self.gr.draw_bar()
+            self.gr.draw_text(status_font, 'Back', self.gr.WHITE, (1, 3),
+                               (1, 1), self.gr.x_pixels, 40,
+                               (0, self.gr.y_pixels-40))
             self.gr.draw_text(status_font, 'Availible Births: '+
                                str(self.starting_births),
-                               self.gr.WHITE, (2, 3), ((gr.y_pixels-1)//40,
-                               gr.y_pixels//40))
-            self.gr.draw_text(status_font, 'Back', self.gr.WHITE, (1, 3),
-                               ((gr.y_pixels-1)//40, gr.y_pixels//40))
+                               self.gr.WHITE, (2, 3), (1, 1), self.gr.x_pixels,
+                               40, (0, self.gr.y_pixels-40))
             if win:
                 self.gr.draw_text(status_font, 'Generation: ' +
                                   str(generation), self.gr.GREEN, (3, 3),
-                                  ((gr.y_pixels-1)//40, gr.y_pixels//40))
+                                  (1, 1), self.gr.x_pixels, 40,
+                                  (0, self.gr.y_pixels-40))
             else:
                 self.gr.draw_text(status_font, 'Generation: ' +
                                   str(generation), self.gr.WHITE, (3, 3),
-                                  ((gr.y_pixels-1)//40, gr.y_pixels//40))
+                                  (1,1), self.gr.x_pixels, 40,
+                                  (0, self.gr.y_pixels-40))
 
             clock.tick(60)
             pygame.display.flip()
