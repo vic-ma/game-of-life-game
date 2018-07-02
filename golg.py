@@ -486,23 +486,20 @@ class Game(GUI):
                 red_on_board = False
 
             self.gr.draw_bar()
+            self.gr.draw_text(status_font, 'Availible Births: '
+                               + str(self.starting_births),
+                               self.gr.WHITE, (2, 3), ((gr.y_pixels-1)//40,
+                               gr.y_pixels//40))
             self.gr.draw_text(status_font, 'Back', self.gr.WHITE, (1, 3),
-                               (1, 1), self.gr.x_pixels, 40,
-                               (0, self.gr.y_pixels-40))
-            self.gr.draw_text(status_font, 'Availible Births: '+
-                               str(self.starting_births),
-                               self.gr.WHITE, (2, 3), (1, 1), self.gr.x_pixels,
-                               40, (0, self.gr.y_pixels-40))
+                              ((gr.y_pixels-1)//40, gr.y_pixels//40))
             if win:
-                self.gr.draw_text(status_font, 'Generation: ' +
-                                  str(generation), self.gr.GREEN, (3, 3),
-                                  (1, 1), self.gr.x_pixels, 40,
-                                  (0, self.gr.y_pixels-40))
+                self.gr.draw_text(status_font, 'Generation: '
+                                  + str(generation), self.gr.GREEN, (3, 3),
+                                  ((gr.y_pixels-1)//40, gr.y_pixels//40))
             else:
-                self.gr.draw_text(status_font, 'Generation: ' +
-                                  str(generation), self.gr.WHITE, (3, 3),
-                                  (1,1), self.gr.x_pixels, 40,
-                                  (0, self.gr.y_pixels-40))
+                self.gr.draw_text(status_font, 'Generation: '
+                                  + str(generation), self.gr.WHITE, (3, 3),
+                                  ((gr.y_pixels-1)//40, gr.y_pixels//40))
 
             clock.tick(60)
             pygame.display.flip()

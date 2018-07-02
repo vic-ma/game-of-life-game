@@ -1,3 +1,6 @@
+![](https://i.imgur.com/UhNsG4I.gif)
+
+
 # Game of Life Game
 The player controls the green cells and is given the opportunity to birth new green cells each turn (one birth is granted each second, limited by a maximum number of stored births) in an attempt to exterminate all red cells in as few turns as possible.
 
@@ -57,4 +60,6 @@ A low starting number and a maximum births number that is less than `3` can be u
 * Change the way levels are added into the game; multiple lines of tuples are terrible
 * Add a mode to create levels, via placing red cells on the screen and recording their locations
 * Create more levels
+* Add options menu
+* Add resolution option
 * Add minigun option, which sets starting births to a very high number and lets player hold down `M1` for rapid placement of cells
