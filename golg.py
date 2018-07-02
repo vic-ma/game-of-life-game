@@ -344,17 +344,17 @@ class Game(GUI):
                 self.tpgol.grid[column][row].next_state = self.tpgol.DEAD
 
         if level == 1:  # Glider
-            self.availible_births = 8
+            self.starting_births = 8
             self.max_births = 8
             tpgol.modify_cells(tpgol.RED, [(1, 0), (2, 1), (0, 2), (1, 2),
                                (2, 2)])
         elif level == 2:  # R-pentomino
-            self.availible_births = 0
+            self.starting_births = 0
             self.max_births = 5
             tpgol.modify_cells(tpgol.RED, [(cx, cy), (cx, cy-1), (cx+1, cy-1),
                                (cx-1, cy), (cx, cy+1)])
         elif level == 3:  # Pulsar
-            self.availible_births = 3
+            self.starting_births = 3
             self.max_births = 3
             tpgol.modify_cells(tpgol.RED, [(cx-2, cy-2), (cx-2, cy-1),
                                (cx-2, cy), (cx-2, cy+1), (cx-2, cy+2),
@@ -362,7 +362,7 @@ class Game(GUI):
                                (cx+2, cy+1), (cx+2, cy+2), (cx, cy+2),
                                (cx, cy-2)])
         elif level == 4:  # Thunderbird
-            self.availible_births = 3
+            self.starting_births = 3
             self.max_births = 3
             x1 = self.tpgol.columns // 4
             x2 = 3 * self.tpgol.columns // 4
@@ -371,8 +371,8 @@ class Game(GUI):
                                (x2-1, cy-3), (x2, cy-3), (x2+1, cy-3),
                                (x2, cy-1), (x2, cy), (x2, cy+1)])
         elif level == 5:  # Pentadecathlon
-            self.availible_births = 5
-            self.max_births = 5
+            self.starting_births = 5
+            self.max_births = 3
             tpgol.modify_cells(tpgol.RED, [(cx-5, 5), (cx-4, 5), (cx-3, 5),
                                (cx-2, 5), (cx-1, 5), (cx, 5), (cx+1, 5),
                                (cx+2, 5), (cx+3, 5), (cx+4, 5), (cx-5, my-6),
@@ -386,7 +386,7 @@ class Game(GUI):
                                (mx-6, cy), (mx-6, cy+1), (mx-6, cy+2),
                                (mx-6, cy+3), (mx-6, cy+4)])
         elif level == 6:  # Pi-heptomino
-            self.availible_births = 3
+            self.starting_births = 3
             self.max_births = 2
             tpgol.modify_cells(tpgol.RED, [(4, cy-1), (5, cy-1), (6, cy-1),
                                (6, cy), (4, cy+1), (5, cy+1), (6, cy+1),
@@ -428,8 +428,8 @@ class Game(GUI):
                     if event.key == pygame.K_SPACE:  # Pause game
                         pause = not pause
                 elif event.type == GOLTICK and not pause:  # Update GOL board
-                    if self.availible_births < self.max_births:
-                        self.availible_births += 1
+                    if self.starting_births < self.max_births:
+                        self.starting_births += 1
                     tpgol.tick()
                     if not win:
                         generation += 1
@@ -437,14 +437,14 @@ class Game(GUI):
             if self.m1_pressed(mouse_buttons):
                 mouse_pos = pygame.mouse.get_pos()
                 coordinates = (mouse_pos[0]//20, mouse_pos[1]//20)
-                if (self.availible_births >= 1 and 
+                if (self.starting_births >= 1 and 
                    (coordinates[0] < len(tpgol.grid) and
                     coordinates[1] < len(tpgol.grid[0])) and not win):
                     if (tpgol.grid[coordinates[0]][coordinates[1]].state ==
                         tpgol.DEAD):
                             tpgol.grid[coordinates[0]]\
                                       [coordinates[1]].state = tpgol.GREEN
-                            self.availible_births -= 1
+                            self.starting_births -= 1
                 # Back button
                 elif (mouse_pos[0] in range(0, gr.x_pixels//3) and
                       mouse_pos[1] in range(gr.y_pixels-40, gr.y_pixels)):
@@ -472,7 +472,7 @@ class Game(GUI):
 
             self.gr.draw_bar()
             self.gr.draw_text(status_font, 'Availible Births: '+
-                               str(self.availible_births),
+                               str(self.starting_births),
                                self.gr.WHITE, (2, 3), ((gr.y_pixels-1)//40,
                                gr.y_pixels//40))
             self.gr.draw_text(status_font, 'Back', self.gr.WHITE, (1, 3),
